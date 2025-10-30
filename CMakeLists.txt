@@ -44,6 +44,10 @@ pico_set_program_version(AirMonitor_Pico "0.1")
 pico_enable_stdio_uart(AirMonitor_Pico 0)
 pico_enable_stdio_usb(AirMonitor_Pico 0)
 
+add_subdirectory(Libraries/pico-displayDrivs/ili9341)
+add_subdirectory(Libraries/pico-displayDrivs/gfx)
+add_subdirectory(Libraries/pico-extras)
+
 # Add the standard library to the build
 target_link_libraries(AirMonitor_Pico
         pico_stdlib)
@@ -51,12 +55,14 @@ target_link_libraries(AirMonitor_Pico
 # Add the standard include files to the build
 target_include_directories(AirMonitor_Pico PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
 # Add any user requested libraries
 target_link_libraries(AirMonitor_Pico 
         hardware_spi
-        
+        ili9341
+        gfx
         )
 
 pico_add_extra_outputs(AirMonitor_Pico)
