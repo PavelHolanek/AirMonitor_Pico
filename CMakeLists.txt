@@ -35,7 +35,16 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(AirMonitor_Pico AirMonitor_Pico.cpp )
+add_executable(AirMonitor_Pico
+        AirMonitor_Pico.cpp
+        GraphicElement.cpp
+        Widget.cpp
+        Window.cpp
+        GraphicElement.h
+        Widget.h
+        Window.h
+        Base.h
+)
 
 pico_set_program_name(AirMonitor_Pico "AirMonitor_Pico")
 pico_set_program_version(AirMonitor_Pico "0.1")
@@ -66,4 +75,3 @@ target_link_libraries(AirMonitor_Pico
         )
 
 pico_add_extra_outputs(AirMonitor_Pico)
-
