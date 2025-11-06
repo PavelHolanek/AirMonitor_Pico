@@ -42,7 +42,13 @@ public:
     QUANTITY type;
 
 private:
-    Text* title;
+    bitMap32* pictogram;
+    bitMap32* arrow;
+    Text* valueText;
+    Text* unitsText;
+    bool childrenAdded;
+    wchar_t valueBuffer[16];
+    wchar_t unitsBuffer[12];
 };
 
 class SettingsWidget : public Widget

@@ -3,6 +3,8 @@
 #include "Parameters.h"
 #include <cstdint>
 #include <cstdio>
+#include <wchar.h>
+#include <cstring>
 
 Widget::Widget()
     : area(nullptr)
@@ -35,64 +37,126 @@ void NavigableWidget::buttonPressed()
 }
 
 SensorWidget::SensorWidget(QUANTITY t)
-    : NavigableWidget(), iconBitmap(nullptr), units(nullptr), type(t), title(nullptr)
+    : NavigableWidget(),
+      iconBitmap(nullptr),
+      units(nullptr),
+      type(t),
+      pictogram(nullptr),
+      arrow(nullptr),
+      valueText(nullptr),
+      unitsText(nullptr),
+      childrenAdded(false)
 {
+    valueBuffer[0] = L'\0';
+    unitsBuffer[0] = L'\0';
+
+    // Set default units per quantity
+    switch (type) {
+        case QUANTITY_TEMPERATURE: units = "C";   break;
+        case QUANTITY_HUMIDITY:    units = "%";   break;
+        case QUANTITY_CO2:         units = "ppm"; break;
+        case QUANTITY_PRESSURE:    units = "hPa"; break;
+        default:                   units = "";    break;
+    }
 }
 
 SensorWidget::~SensorWidget()
 {
-    if (title) {
-        delete title;
-        title = nullptr;
-    }
+    if (pictogram) { delete pictogram; pictogram = nullptr; }
+    if (arrow) { delete arrow; arrow = nullptr; }
+    if (valueText) { delete valueText; valueText = nullptr; }
+    if (unitsText) { delete unitsText; unitsText = nullptr; }
 }
 
 void SensorWidget::showValue(int32_t value)
 {
-    if (!area) return;
-
-    // Simple display: print numeric value at area's position.
-    // Adjust text color/background if needed elsewhere before calling.
-    GFX_setCursor((int16_t)area->posX, (int16_t)area->posY);
-    // Use simple formatting; GFX_printf(textsize, format, ...) behaves like printf
-    GFX_printf(PARAM_DEFAULT_TEXT_SIZE, "%ld", (long)value);
-
-    // If units are provided, print them after a space
-    if (units) {
-        GFX_printf(PARAM_DEFAULT_TEXT_SIZE, " %s", units);
+    // Update the internal buffer; actual drawing occurs in update()
+    swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", (long)value);
+    if (valueText) {
+        valueText->str = valueBuffer;
     }
 }
 
 void SensorWidget::update()
 {
-    if (area) {
-        // repaint sensor area
-        area->Paint();
+    if (!area) return;
 
-        // Create title lazily based on quantity type
-        if (!title) {
-            const wchar_t* label = L"Sensor";
-            switch (type) {
-                case QUANTITY_TEMPERATURE: label = L"26,8 c"; break;
-                case QUANTITY_HUMIDITY:    label = L"78,8 %"; break;
-                case QUANTITY_CO2:         label = L"1523ppm"; break;
-                case QUANTITY_PRESSURE:    label = L"26.26 hPa"; break;
-                default:                   label = L"Sensor"; break;
-            }
-            title = new Text(label);
-            title->backgroundColor = area->backgroundColor;
-            title->textSize = SENSOR_WIDGET_TEXT_SIZE;
+    // Lazy initialize children
+    if (!pictogram) pictogram = new bitMap32();
+    if (!arrow) arrow = new bitMap32();
+    if (!valueText) valueText = new Text(L"");
+    if (!unitsText) unitsText = new Text(L"");
+
+    // Convert units (ASCII) into wide buffer
+    unitsBuffer[0] = L'\0';
+    if (units) {
+        size_t i = 0;
+        size_t maxn = sizeof(unitsBuffer) / sizeof(unitsBuffer[0]) - 1;
+        while (units[i] != '\0' && i < maxn) {
+            unitsBuffer[i] = (wchar_t)units[i];
+            ++i;
         }
-
-        // Style and position the title within the area
-        title->backgroundColor = area->backgroundColor;
-        title->color = area->color;
-        title->posX = area->posX + SENSOR_WIDGET_PADDING;
-        title->posY = area->posY + SENSOR_WIDGET_HEIGHT - SENSOR_WIDGET_PADDING - 3 * 8;
-
-        // Paint the title
-        title->Paint();
+        unitsBuffer[i] = L'\0';
     }
+    unitsText->str = unitsBuffer;
+
+    // Assign bitmap data pointers
+    pictogram->data = iconBitmap; // pictogram from external source if provided
+
+    // Colors and sizes from parent area
+    Color bg = area->backgroundColor;
+    Color fg = area->color;
+
+    pictogram->backgroundColor = bg;
+    pictogram->color = fg;
+
+    arrow->backgroundColor = bg;
+    arrow->color = fg;
+
+    valueText->backgroundColor = bg;
+    valueText->color = fg;
+    valueText->textSize = 3;
+
+    unitsText->backgroundColor = bg;
+    unitsText->color = fg;
+    unitsText->textSize = 2;
+
+    // Layout calculations
+    const uint16_t ax = area->posX;
+    const uint16_t ay = area->posY;
+    const uint16_t aw = area->sizeX;
+    const uint16_t ah = area->sizeY;
+
+    // UL pictogram (assume 32x32)
+    pictogram->posX = ax + SENSOR_WIDGET_PADDING;
+    pictogram->posY = ay + SENSOR_WIDGET_PADDING;
+
+    // UR arrow (assume 32x32)
+    arrow->posX = ax + aw - SENSOR_WIDGET_PADDING - 32;
+    arrow->posY = ay + SENSOR_WIDGET_PADDING;
+
+    // BL value
+    valueText->posX = ax + SENSOR_WIDGET_PADDING;
+    valueText->posY = ay + ah - SENSOR_WIDGET_PADDING - (uint16_t)(8 * valueText->textSize);
+
+    // BR units right-aligned (6 px per char at size 1)
+    size_t ulen = 0;
+    while (unitsBuffer[ulen] != L'\0' && ulen < (sizeof(unitsBuffer) / sizeof(unitsBuffer[0]))) ++ulen;
+    const uint16_t unitsPixelWidth = (uint16_t)(ulen * 6 * unitsText->textSize);
+    unitsText->posX = ax + aw - SENSOR_WIDGET_PADDING - unitsPixelWidth;
+    unitsText->posY = ay + ah - SENSOR_WIDGET_PADDING - (uint16_t)(8 * unitsText->textSize);
+
+    // Add as children once so Area will paint them
+    if (!childrenAdded) {
+        area->addChildren(pictogram);
+        area->addChildren(arrow);
+        area->addChildren(valueText);
+        area->addChildren(unitsText);
+        childrenAdded = true;
+    }
+
+    // Paint area and contained elements
+    area->Paint();
 }
 
 SettingsWidget::SettingsWidget()
