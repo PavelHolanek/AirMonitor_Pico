@@ -6,6 +6,8 @@
 #include "ili9341.h"
 #include "gfx.h"
 #include "Window.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #ifndef __DISPLAYTEST_H__
 #define __DISPLAYTEST_H__
@@ -98,12 +100,8 @@ void InitializeDisplay(uint16_t color)
     GFX_clearScreen();
 }
 
-int main()
+void initDiacritic()
 {
-    stdio_init_all();
-
-    InitializeDisplay(FOREGROUND);
-
     addExtraCharacter(L'Á');
     addExtraCharacter(L'Ó');
     addExtraCharacter(L'Í');
@@ -135,8 +133,31 @@ int main()
     addExtraCharacter(L'ď');
     addExtraCharacter(L'ť');
     addExtraCharacter(L'ý');
+}
+
+static int counter = 0;
+void vTaskIncrementPrint(void *pvParameters)
+{
+    while (1)
+    {
+        counter++;
+        printf("Counter: %d\n", counter);
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+}
+
+int main()
+{
+    stdio_init_all();
+
+    InitializeDisplay(FOREGROUND);
+
+    initDiacritic();
 
     MainWindow* window = new MainWindow{};
+
+    xTaskCreate(vTaskIncrementPrint, "Increment and Print", 1000, NULL, 1, NULL);
+    vTaskStartScheduler();
 
     return 0;
 }

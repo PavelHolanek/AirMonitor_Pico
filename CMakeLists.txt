@@ -28,6 +28,8 @@ set(PICO_BOARD pico2_w CACHE STRING "Board type")
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
+include(FreeRTOS_Kernel_import.cmake)
+
 project(AirMonitor_Pico C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
@@ -35,8 +37,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(AirMonitor_Pico
-        AirMonitor_Pico.cpp
+add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GraphicElement.cpp
         Widget.cpp
         Window.cpp
@@ -51,7 +52,7 @@ pico_set_program_version(AirMonitor_Pico "0.1")
 
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(AirMonitor_Pico 0)
-pico_enable_stdio_usb(AirMonitor_Pico 0)
+pico_enable_stdio_usb(AirMonitor_Pico 1)
 
 add_subdirectory(Libraries/pico-displayDrivs/ili9341)
 add_subdirectory(Libraries/pico-displayDrivs/gfx)
@@ -59,6 +60,8 @@ add_subdirectory(Libraries/pico-extras)
 
 # Add the standard library to the build
 target_link_libraries(AirMonitor_Pico
+		pico_async_context_freertos
+        FreeRTOS-Kernel-Heap4
         pico_stdlib)
 
 # Add the standard include files to the build
