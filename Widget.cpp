@@ -50,10 +50,12 @@ SensorWidget::SensorWidget(QUANTITY t)
     valueBuffer[0] = L'\0';
     unitsBuffer[0] = L'\0';
 
+    valueText = new Text(L"--");
+
     // Set default units per quantity
     switch (type) {
         case QUANTITY_TEMPERATURE: units = "C";   break;
-        case QUANTITY_HUMIDITY:    units = "%";   break;
+        case QUANTITY_HUMIDITY:    units = "%%";   break;
         case QUANTITY_CO2:         units = "ppm"; break;
         case QUANTITY_PRESSURE:    units = "hPa"; break;
         default:                   units = "";    break;

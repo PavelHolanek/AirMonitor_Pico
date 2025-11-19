@@ -45,6 +45,12 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         Widget.h
         Window.h
         Base.h
+        Clock.c
+        Clock.h
+        Tasks.c
+        Tasks.h
+        Log.c
+        Log.h
 )
 
 pico_set_program_name(AirMonitor_Pico "AirMonitor_Pico")

@@ -8,6 +8,7 @@
 #include "Window.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "log.h"
 
 #ifndef __DISPLAYTEST_H__
 #define __DISPLAYTEST_H__
@@ -149,6 +150,10 @@ void vTaskIncrementPrint(void *pvParameters)
 int main()
 {
     stdio_init_all();
+
+    sleep_ms(10000);
+
+    LOG("Initializing");
 
     InitializeDisplay(FOREGROUND);
 
