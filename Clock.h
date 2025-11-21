@@ -2,10 +2,16 @@
 #define TIME_H
 
 #include <stdint.h>
+#include "ds3231.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define SDA_PIN_CLOCK 20
+#define SDL_PIN_CLOCK 21
+
+static ds3231_t ds3231;
 
 // Simple time representation
 typedef struct {
@@ -16,9 +22,9 @@ typedef struct {
     uint8_t second;  // 0-59
 } Time;
 
-// Returns the current time.
-// Currently a stub that will be implemented later.
-Time getClockTime(void);
+Time getClockTime();
+
+void initClock();
 
 #ifdef __cplusplus
 }
