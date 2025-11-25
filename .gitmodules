@@ -7,3 +7,6 @@
 [submodule "libraries/ds3231"]
 	path = libraries/ds3231
 	url = https://github.com/PavelHolanek/pico-ds3231
+[submodule "libraries/embedded-i2c-scd4x"]
+	path = libraries/embedded-i2c-scd4x
+	url = https://github.com/Sensirion/embedded-i2c-scd4x

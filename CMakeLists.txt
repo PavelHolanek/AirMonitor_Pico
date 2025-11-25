@@ -64,6 +64,7 @@ add_subdirectory(libraries/pico-displayDrivs/ili9341)
 add_subdirectory(libraries/pico-displayDrivs/gfx)
 add_subdirectory(libraries/pico-extras)
 add_subdirectory(libraries/ds3231)
+add_subdirectory(libraries/embedded-i2c-scd4x)
 
 # Add the standard library to the build
 target_link_libraries(AirMonitor_Pico
@@ -82,7 +83,8 @@ target_link_libraries(AirMonitor_Pico
         hardware_spi
         ili9341
         gfx
-	pico_ds3231 
+	pico_ds3231
+	scd4x
         )
 
 pico_add_extra_outputs(AirMonitor_Pico)
