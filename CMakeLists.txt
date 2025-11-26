@@ -38,12 +38,13 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
-        GraphicElement.cpp
-        Widget.cpp
-        Window.cpp
-        GraphicElement.h
-        Widget.h
-        Window.h
+        GUI/GraphicElement.cpp
+        GUI/Widget.cpp
+        GUI/Window.cpp
+        GUI/GraphicElement.h
+        GUI/Widget.h
+        GUI/Window.h
+        GUI/Bitmaps32.h
         Base.h
         Clock.c
         Clock.h
@@ -51,6 +52,12 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         Tasks.h
         Log.c
         Log.h
+        sensors/sensor_sdc41.c
+        sensors/sensor_sdc41.h
+        sensors/sensor_sht40.c
+        sensors/sensor_sht40.h
+        sensors/sensor_bme280.c
+        sensors/sensor_bme280.h
 )
 
 pico_set_program_name(AirMonitor_Pico "AirMonitor_Pico")
@@ -76,6 +83,8 @@ target_link_libraries(AirMonitor_Pico
 target_include_directories(AirMonitor_Pico PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/..
+        ${CMAKE_CURRENT_LIST_DIR}/GUI
+        ${CMAKE_CURRENT_LIST_DIR}/sensors
 )
 
 # Add any user requested libraries
