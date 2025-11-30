@@ -1,11 +1,32 @@
 #include "Tasks.h"
 #include "Clock.h"
-#include "Time.h"
-#include "log.h"
+#include "Log.h"
 #include "Settings.h"
 #include "sensors/sensor_bme280.h"
 #include "sensors/sensor_sht40.h"
 #include "sensors/sensor_sdc41.h"
+#include <stdint.h>
+
+SemaphoreHandle_t i2c0_semaphore = NULL;
+SemaphoreHandle_t i2c1_semaphore = NULL;
+SemaphoreHandle_t spi0_semaphore = NULL;
+SemaphoreHandle_t spi1_semaphore = NULL;
+
+QueueHandle_t BME280DataQueue = NULL;
+QueueHandle_t SHT40DataQueue = NULL;
+QueueHandle_t SDC41DataQueue = NULL;
+
+QueueHandle_t TemperatureQueue = NULL;
+QueueHandle_t PreassureQueue = NULL;
+QueueHandle_t HumidityQueue = NULL;
+QueueHandle_t CO2Queue = NULL;
+
+SemaphoreHandle_t TimeRequestSemaphore = NULL;
+QueueHandle_t CurrentTimeQueue = NULL;
+
+QueueHandle_t LogsToStoreQueue = NULL;
+
+QueueHandle_t JoystickStateQueue = NULL;
 
 void intializeSemaphoresAndQueues(void)
 {
@@ -23,23 +44,20 @@ PreassureQueue = xQueueCreate(1, sizeof(uint16_t));
 HumidityQueue = xQueueCreate(1, sizeof(uint16_t));
 CO2Queue = xQueueCreate(1, sizeof(uint16_t));
 
+TimeRequestSemaphore  = xSemaphoreCreateBinary();
 CurrentTimeQueue = xQueueCreate(1, sizeof(Time));
 
 LogsToStoreQueue = xQueueCreate(8, sizeof(char*));
 
 JoystickStateQueue = xQueueCreate(1, sizeof(uint8_t));
 }
-
-void getTimeTask(void) {
-    // For now, just call getTime(). Synchronization with RTC will be added later.
-    Time t = getClockTime();
-    (void)t; // suppress unused variable warning for now
-}
-
 void getClockTimeTask(void) {
+    Time value;
     for(;;) 
     {
-
+        xSemaphoreTake(TimeRequestSemaphore, portMAX_DELAY);
+        value = getClockTimeImpl();
+        xQueueOverwrite(CurrentTimeQueue, ( void * ) &value);
     }
 }
 
@@ -117,10 +135,10 @@ void dataManagerTask(void) {
     sensor_sht40_data_t sht40value;
     sensor_bme280_data_t bme280value;
 
-    u_int16_t temperature;
-    u_int16_t humidity;
-    u_int16_t preassure;
-    u_int16_t co2;
+    uint16_t temperature;
+    uint16_t humidity;
+    uint16_t preassure;
+    uint16_t co2;
 
     for(;;)
     { 
@@ -145,10 +163,10 @@ void dataManagerTask(void) {
 }
 
 void valuesChangedGUITask(void) {
-    u_int16_t temperature;
-    u_int16_t humidity;
-    u_int16_t preassure;
-    u_int16_t co2;
+    uint16_t temperature;
+    uint16_t humidity;
+    uint16_t preassure;
+    uint16_t co2;
     for(;;)
     { 
         xQueueReceive(TemperatureQueue, &temperature, TICKS_TO_WAIT);

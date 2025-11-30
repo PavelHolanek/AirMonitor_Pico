@@ -1,7 +1,20 @@
 #include "Clock.h"
 #include "Log.h"
+#include "Tasks.h"
+#include "FreeRTOS.h"
+#include "queue.h"
+#include "semphr.h"
 
-Time getClockTime() {
+Time getClockTime()
+{
+    Time value;
+    xSemaphoreGive(TimeRequestSemaphore);
+    xQueueReceive(CurrentTimeQueue, ( void * ) &value, TICKS_TO_WAIT);
+    return value;
+}
+
+Time getClockTimeImpl()
+{
     ds3231_data_t ds3231_data;
     Time t;
     if (ds3231_read_current_time(&ds3231, &ds3231_data)) 

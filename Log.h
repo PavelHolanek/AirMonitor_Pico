@@ -5,8 +5,9 @@
 extern "C" {
 #endif
 
-// Logs a message to serial with a time prefix using printf().
-// Format: [MM-DD HH:MM:SS] message\n
+#define LOGS_NUMBER
+
+char* logsToSave[LOGS_NUMBER];
 void LOG(const char* message);
 
 #ifdef __cplusplus

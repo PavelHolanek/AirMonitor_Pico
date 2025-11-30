@@ -23,6 +23,7 @@ typedef struct {
 } Time;
 
 Time getClockTime();
+Time getClockTimeImpl();
 
 void initClock();
 

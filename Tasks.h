@@ -8,29 +8,31 @@ extern "C" {
 #include "Clock.h"
  
 #include "FreeRTOS.h"
+#include "queue.h"
 #include "semphr.h"
 
 #define TICKS_TO_WAIT 1000
 
-SemaphoreHandle_t i2c0_semaphore;
-SemaphoreHandle_t i2c1_semaphore;
-SemaphoreHandle_t spi0_semaphore;
-SemaphoreHandle_t spi1_semaphore;
+extern SemaphoreHandle_t i2c0_semaphore;
+extern SemaphoreHandle_t i2c1_semaphore;
+extern SemaphoreHandle_t spi0_semaphore;
+extern SemaphoreHandle_t spi1_semaphore;
 
-QueueHandle_t BME280DataQueue;
-QueueHandle_t SHT40DataQueue;
-QueueHandle_t SDC41DataQueue;
+extern QueueHandle_t BME280DataQueue;
+extern QueueHandle_t SHT40DataQueue;
+extern QueueHandle_t SDC41DataQueue;
 
-QueueHandle_t TemperatureQueue;
-QueueHandle_t PreassureQueue;
-QueueHandle_t HumidityQueue;
-QueueHandle_t CO2Queue;
+extern QueueHandle_t TemperatureQueue;
+extern QueueHandle_t PreassureQueue;
+extern QueueHandle_t HumidityQueue;
+extern QueueHandle_t CO2Queue;
 
-QueueHandle_t CurrentTimeQueue;
+extern SemaphoreHandle_t TimeRequestSemaphore;
+extern QueueHandle_t CurrentTimeQueue;
 
-QueueHandle_t LogsToStoreQueue;
+extern QueueHandle_t LogsToStoreQueue;
 
-QueueHandle_t JoystickStateQueue;
+extern QueueHandle_t JoystickStateQueue;
 
 void intializeSemaphoresAndQueues(void);
 
