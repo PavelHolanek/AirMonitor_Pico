@@ -14,6 +14,7 @@
 #include "Window.h"
 #include <inttypes.h>  // PRIx64
 #include "sensor_sdc41.h"
+#include "sensor_sht40.h"
 
 #ifndef __DISPLAYTEST_H__
 #define __DISPLAYTEST_H__
@@ -157,20 +158,22 @@ int main()
 
     sleep_ms(10000);
 
-    printf("Initializing clock");
+    printf("Initializing clock\n");
     initClock();
 
-    printf("Initializing sdc41");
+    printf("Initializing sdc41\n");
     sensor_sdc41_init();
+    printf("Initializing sht40\n");
+    sensor_sht40_init();
 
-    printf("Initializing display");
+    printf("Initializing display\n");
     InitializeDisplay(FOREGROUND);
     initDiacritic();
     gui_init();
 
     sleep_ms(100);
 
-    printf("Initializing freeRTOS kernel");
+    printf("Initializing freeRTOS kernel\n");
     intializeSemaphoresAndQueues();
     //xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 1, NULL);
     xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 1, NULL);

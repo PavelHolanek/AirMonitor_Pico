@@ -39,11 +39,8 @@ Time getClockTimeImpl()
 
 void initClock()
 {
-    printf("1");
     ds3231_init(&ds3231, &i2c1_inst, DS3231_DEVICE_ADRESS, AT24C32_EEPROM_ADRESS_0);
     sleep_ms(200);
-    printf("2");
-    /* Initiliaze I2C line. */
     gpio_init(SDA_PIN_CLOCK);
     gpio_init(SDL_PIN_CLOCK);
     gpio_set_function(SDA_PIN_CLOCK, GPIO_FUNC_I2C);
@@ -63,7 +60,5 @@ void initClock()
         .century = 1,
         .am_pm = false
     };
-    printf("3");
     ds3231_configure_time(&ds3231, &ds3231_data);
-    printf("4");
 }
