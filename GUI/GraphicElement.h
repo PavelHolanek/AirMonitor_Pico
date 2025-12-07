@@ -2,6 +2,7 @@
 #define GRAPHIC_ELEMENT_H
 
 #include "Base.h"
+#include "Libraries/pico-displayDrivs/ili9488/ili9488.h" // brings Color struct definition
 
 #define MAX_AREA_CHILDREN_COUNT 4
 

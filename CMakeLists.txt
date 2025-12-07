@@ -69,7 +69,7 @@ pico_set_program_version(AirMonitor_Pico "0.1")
 pico_enable_stdio_uart(AirMonitor_Pico 0)
 pico_enable_stdio_usb(AirMonitor_Pico 1)
 
-add_subdirectory(libraries/pico-displayDrivs/ili9341)
+add_subdirectory(libraries/pico-displayDrivs/ili9488)
 add_subdirectory(libraries/pico-displayDrivs/gfx)
 add_subdirectory(libraries/pico-extras)
 add_subdirectory(libraries/ds3231)
@@ -92,7 +92,7 @@ target_include_directories(AirMonitor_Pico PRIVATE
 # Add any user requested libraries
 target_link_libraries(AirMonitor_Pico 
         hardware_spi
-        ili9341
+        ili9488
         gfx
 	pico_ds3231
 	scd4x

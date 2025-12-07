@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-#define Color uint16_t
-
 typedef enum
 {
     SENSOR_BMP280 = 0,

@@ -3,7 +3,7 @@
 #include "hardware/spi.h"
 #include <string.h>
 #include <wchar.h>
-#include "ili9341.h"
+#include "ili9488.h"
 #include "gfx.h"
 #include "GUIManager.h"
 #include "FreeRTOS.h"
@@ -43,8 +43,8 @@
 #define TFT_BACKLIGHT   255 // hardwired to 3.3v
 #endif
 
-#define TFT_WIDTH       320
-#define TFT_HEIGHT      240
+#define TFT_WIDTH       480
+#define TFT_HEIGHT      320
 #define TFT_ROTATION    3
 
 // Pin definitions for the SD card
@@ -58,8 +58,9 @@
 
 // Colors are in 565 (FFFF) format. To convert from RGB888 to RGB565, use:
 //   ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-#define BACKGROUND 0x0000
-#define FOREGROUND 0x73BF
+
+constexpr Color BACKGROUND = {0x00, 0x00, 0x00};
+constexpr Color FOREGROUND  = {0xCC, 0xCC, 0xCC};
 
 #endif
 
@@ -102,18 +103,20 @@ void convert_and_print_serial(uint16_t* serial_raw) { //scd41
     printf("0x%" PRIx64, serial_as_int);
 }
 
-void InitializeDisplay(uint16_t color)
+void InitializeDisplay(Color color)
 {
     // Initialize display
     puts("Initializing display...");
     LCD_setPins(TFT_DC, TFT_CS, TFT_RST, TFT_SCLK, TFT_MOSI);
     LCD_initDisplay();
     LCD_setRotation(TFT_ROTATION);
-    GFX_createFramebuf();
+    // Framebuff is currently bigger size than pico RAM. TODO imlement reduced framebuffer as usually small portion of the display needs to be updated;
+    //GFX_createFramebuf(); 
     GFX_setClearColor(color);
     GFX_setTextBack(BACKGROUND);
     GFX_setTextColor(FOREGROUND);
     GFX_clearScreen();
+    GFX_flush();
 }
 
 void initDiacritic()
@@ -267,13 +270,15 @@ int main()
 
     */
 
+    sleep_ms(100);
+
     InitializeDisplay(FOREGROUND);
 
     initDiacritic();
 
     gui_init();
 
-    sleep_ms(10000);
+    sleep_ms(100);
 
     intializeSemaphoresAndQueues();
 
