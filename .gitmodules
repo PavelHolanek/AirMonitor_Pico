@@ -10,3 +10,6 @@
 [submodule "libraries/embedded-i2c-scd4x"]
 	path = libraries/embedded-i2c-scd4x
 	url = https://github.com/Sensirion/embedded-i2c-scd4x
+[submodule "libraries/embedded-i2c-sht4x"]
+	path = libraries/embedded-i2c-sht4x
+	url = https://github.com/Sensirion/embedded-i2c-sht4x
