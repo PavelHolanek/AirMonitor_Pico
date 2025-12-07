@@ -35,6 +35,7 @@ constexpr uint8_t PARAM_MAX_CHILDREN_PER_AREA = 4;
 //MAIN WINDOW
 constexpr uint8_t HEADER_HEIGHT = 75;
 constexpr uint8_t HEADER_MARGIN = 12;
+constexpr Color MAIN_WINDOW_BACKGROUND = PARAM_COLOR_BLACK;
 
 constexpr uint8_t BODY_HEIGHT = PARAM_SCREEN_HEIGHT - HEADER_HEIGHT;
 

@@ -12,8 +12,7 @@ Window::~Window() {}
 MainWindow::MainWindow()
 {
     // paint whole screen with background color
-    GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, PARAM_COLOR_BLACK);
-    GFX_flush();
+    GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, MAIN_WINDOW_BACKGROUND);
 
     // create sensor widgets with their QUANTITY types
     temperatureWidget = new SensorWidget(QUANTITY_TEMPERATURE);
@@ -91,8 +90,6 @@ MainWindow::MainWindow()
     GFX_drawLine(SENSOR_WIDGET_MARGIN, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - 2 * SENSOR_WIDGET_MARGIN, PARAM_SCREEN_WIDTH - SENSOR_WIDGET_MARGIN, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - 2 * SENSOR_WIDGET_MARGIN, PARAM_COLOR_WHITE);
 
     GFX_drawLine(PARAM_SCREEN_WIDTH / 2, HEADER_HEIGHT + SENSOR_WIDGET_MARGIN, PARAM_SCREEN_WIDTH / 2, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_MARGIN, PARAM_COLOR_WHITE);
-
-    GFX_flush();
 }
 
 SensorWidget* MainWindow::getWidgetByType(QUANTITY type)

@@ -187,8 +187,6 @@ void valuesChangedGUITask(void*) {
         gui_dataChanged(QUANTITY_PRESSURE, preassure);
         gui_dataChanged(QUANTITY_HUMIDITY, humidity);
         gui_dataChanged(QUANTITY_CO2, co2);
-
-        GFX_flush();
     }
 }
 

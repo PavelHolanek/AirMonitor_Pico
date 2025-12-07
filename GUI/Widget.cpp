@@ -104,7 +104,11 @@ void SensorWidget::update()
     unitsText->color = fg;
 
     // Repaint area and children
+    GFX_createFramebuf(area->posX, area->posY, area->sizeX, area->sizeY);
+    GFX_fillRect(area->posX, area->posY, area->sizeX, area->sizeY, MAIN_WINDOW_BACKGROUND);
     area->Paint();
+    GFX_flush();
+    GFX_destroyFramebuf();
 }
 
 void SensorWidget::initialize()

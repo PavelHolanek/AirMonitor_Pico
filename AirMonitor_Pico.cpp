@@ -93,7 +93,6 @@ void printLine(uint16_t x, uint16_t y, const wchar_t *wideStr)
     charArray[i] = '\0';
     GFX_setCursor(x, y);
     GFX_printf(3, charArray);
-    GFX_flush();
 }
 
 void convert_and_print_serial(uint16_t* serial_raw) { //scd41
@@ -110,13 +109,10 @@ void InitializeDisplay(Color color)
     LCD_setPins(TFT_DC, TFT_CS, TFT_RST, TFT_SCLK, TFT_MOSI);
     LCD_initDisplay();
     LCD_setRotation(TFT_ROTATION);
-    // Framebuff is currently bigger size than pico RAM. TODO imlement reduced framebuffer as usually small portion of the display needs to be updated;
-    //GFX_createFramebuf(); 
-    GFX_setClearColor(color);
+
     GFX_setTextBack(BACKGROUND);
     GFX_setTextColor(FOREGROUND);
     GFX_clearScreen();
-    GFX_flush();
 }
 
 void initDiacritic()
