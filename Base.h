@@ -1,10 +1,9 @@
 #ifndef GRAPHIC_BASE_H
 #define GRAPHIC_BASE_H
 
-
 #include <stdint.h>
 
-using Color = uint16_t;
+#define Color uint16_t
 
 typedef enum
 {

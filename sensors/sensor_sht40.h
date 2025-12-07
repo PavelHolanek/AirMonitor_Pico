@@ -10,11 +10,12 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /* Basic measurement set for SHT40 (T + RH) */
 typedef struct {
-    float temperature_c;
-    float humidity_rh;
+    int32_t temperature_c;
+    int32_t humidity_rh;
 } sensor_sht40_data_t;
 
 /* Initialize the sensor (I2C, pins, etc.). Return true on success. */

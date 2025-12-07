@@ -3,6 +3,7 @@
 #include <wchar.h>
 #include "Parameters.h"
 #include "Bitmaps32.h"
+#include <cstdio>
 
 GraphicElement::GraphicElement() : backgroundColor(0), color(0) { posX = 0; posY = 0; }
 GraphicElement::GraphicElement(uint16_t x, uint16_t y) : backgroundColor(0), color(0), posX(x), posY(y) {}
@@ -53,6 +54,7 @@ void Area::addChildren(GraphicElement* child)
 
 void Area::Paint()
 {
+    printf("Area \n");
     GFX_fillRoundedRect(posX, posY, sizeX, sizeY, SENSOR_WIDGET_CORNER_RADIUS, backgroundColor);
     
     for (uint8_t i = 0; i < numberOfChildren; ++i)
@@ -66,6 +68,7 @@ void Area::Paint()
 
 void Text::Paint() 
 {
+    printf("Text \n");
     size_t i = 0;
     size_t len = wcslen(str);
     char charArray[len + 1];
@@ -81,6 +84,14 @@ void Text::Paint()
         }
         i++;
     }
+
+    printf("color %d \n", color);
+    printf("backgroundColor %d \n", backgroundColor);
+    printf("i %d \n", i);
+    printf("posX %d \n", posX);
+    printf("posY %d \n", posY);
+    printf("\n");
+
     charArray[i] = '\0';
     GFX_setCursor(posX, posY);
     GFX_setTextColor(color);

@@ -2,10 +2,14 @@
 #include "Clock.h"
 #include "Log.h"
 #include "Settings.h"
+#include "Base.h"
+#include "GUIManager.c"
 #include "sensors/sensor_bme280.h"
 #include "sensors/sensor_sht40.h"
 #include "sensors/sensor_sdc41.h"
 #include <stdint.h>
+#include <stdio.h>
+#include "Libraries/pico-displayDrivs/gfx/gfx.h"
 
 SemaphoreHandle_t i2c0_semaphore = NULL;
 SemaphoreHandle_t i2c1_semaphore = NULL;
@@ -28,12 +32,12 @@ QueueHandle_t LogsToStoreQueue = NULL;
 
 QueueHandle_t JoystickStateQueue = NULL;
 
-void intializeSemaphoresAndQueues(void)
+void intializeSemaphoresAndQueues()
 {
-i2c0_semaphore = xSemaphoreCreateBinary();
-i2c1_semaphore = xSemaphoreCreateBinary();
-spi0_semaphore = xSemaphoreCreateBinary();
-spi1_semaphore = xSemaphoreCreateBinary();
+i2c0_semaphore = xSemaphoreCreateMutex();
+i2c1_semaphore = xSemaphoreCreateMutex();
+spi0_semaphore = xSemaphoreCreateMutex();
+spi1_semaphore = xSemaphoreCreateMutex();
 
 BME280DataQueue = xQueueCreate(1, sizeof(sensor_bme280_data_t));
 SHT40DataQueue = xQueueCreate(1, sizeof(sensor_sht40_data_t));
@@ -50,8 +54,10 @@ CurrentTimeQueue = xQueueCreate(1, sizeof(Time));
 LogsToStoreQueue = xQueueCreate(8, sizeof(char*));
 
 JoystickStateQueue = xQueueCreate(1, sizeof(uint8_t));
+
+sensorsMeassurementPeriod = 30000;
 }
-void getClockTimeTask(void) {
+void getClockTimeTask(void*) {
     Time value;
     for(;;) 
     {
@@ -61,12 +67,12 @@ void getClockTimeTask(void) {
     }
 }
 
-void readBME280Task(void) {
+void readBME280Task(void*) {
     sensor_bme280_data_t value;
     for(;;)
     {
-        xSemaphoreTake(i2c0_semaphore, TICKS_TO_WAIT);
-
+        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        printf("readBME280Task \n");
         if (sensor_bme280_read(&value))
         {
             if(xQueueSend(BME280DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -84,12 +90,12 @@ void readBME280Task(void) {
     }
 }
 
-void readSHT40Task(void) {
+void readSHT40Task(void*) {
     sensor_sht40_data_t value;
     for(;;)
     { 
-        xSemaphoreTake(i2c0_semaphore, TICKS_TO_WAIT);
-
+        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        printf("readSHT40Task \n");
         if (sensor_sht40_read(&value))
         {
             if(xQueueSend(SHT40DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -107,12 +113,12 @@ void readSHT40Task(void) {
     }
 }
 
-void readSCD41Task(void) {
+void readSCD41Task(void*) {
     sensor_sdc41_data_t value;
     for(;;)
     { 
-        xSemaphoreTake(i2c0_semaphore, TICKS_TO_WAIT);
-
+        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        printf("readSCD41Task \n");
         if (sensor_sdc41_read(&value))
         {
             if(xQueueSend(SDC41DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -130,7 +136,8 @@ void readSCD41Task(void) {
     }
 }
 
-void dataManagerTask(void) {
+void dataManagerTask(void*) {
+    printf("dataManagerTask1 \n");
     sensor_sdc41_data_t sdc41value;
     sensor_sht40_data_t sht40value;
     sensor_bme280_data_t bme280value;
@@ -142,12 +149,12 @@ void dataManagerTask(void) {
 
     for(;;)
     { 
-        xQueueReceive(SDC41DataQueue, &sdc41value, TICKS_TO_WAIT);
-        xQueueReceive(SHT40DataQueue, &sht40value, TICKS_TO_WAIT);
-        xQueueReceive(BME280DataQueue, &bme280value, TICKS_TO_WAIT);
-
+        xQueueReceive(SDC41DataQueue, &sdc41value, portMAX_DELAY);
+        xQueueReceive(SHT40DataQueue, &sht40value, portMAX_DELAY);
+        xQueueReceive(BME280DataQueue, &bme280value, portMAX_DELAY);
+        printf("dataManagerTask2 \n");
         //TODO moving average
-        temperature = (bme280value.pressure_pa + sht40value.temperature_c) / 2;
+        temperature = (bme280value.temperature_c + sht40value.temperature_c) / 2;
         humidity = sht40value.humidity_rh;
         preassure = bme280value.pressure_pa;
         co2 = sdc41value.co2_ppm;
@@ -162,51 +169,58 @@ void dataManagerTask(void) {
     }
 }
 
-void valuesChangedGUITask(void) {
+void valuesChangedGUITask(void*) {
     uint16_t temperature;
     uint16_t humidity;
     uint16_t preassure;
     uint16_t co2;
     for(;;)
     { 
-        xQueueReceive(TemperatureQueue, &temperature, TICKS_TO_WAIT);
-        xQueueReceive(PreassureQueue, &preassure, TICKS_TO_WAIT);
-        xQueueReceive(HumidityQueue, &humidity, TICKS_TO_WAIT);
-        xQueueReceive(CO2Queue, &co2, TICKS_TO_WAIT);
+        xQueueReceive(TemperatureQueue, &temperature, portMAX_DELAY);
+        xQueueReceive(PreassureQueue, &preassure, portMAX_DELAY);
+        xQueueReceive(HumidityQueue, &humidity, portMAX_DELAY);
+        xQueueReceive(CO2Queue, &co2, portMAX_DELAY);
 
-        //TODO update of GUI
+        printf("valuesChangedGUITask \n");
+
+        gui_dataChanged(QUANTITY_TEMPERATURE, temperature);
+        gui_dataChanged(QUANTITY_PRESSURE, preassure);
+        gui_dataChanged(QUANTITY_HUMIDITY, humidity);
+        gui_dataChanged(QUANTITY_CO2, co2);
+
+        GFX_flush();
     }
 }
 
-void timeChangedGUITask(void) {
+void timeChangedGUITask(void*) {
     for(;;)
     { 
 
     }
 }
 
-void joystickEvaluationTask(void) {
+void joystickEvaluationTask(void*) {
     for(;;)
     { 
 
     }
 }
 
-void joystickActionGUITask(void) {
+void joystickActionGUITask(void*) {
     for(;;)
     { 
 
     }
 }
 
-void writeLogTask(void) {
+void writeLogTask(void*) {
     for(;;)
     { 
 
     }
 }
 
-void writeValueToStorageTask(void) {
+void writeValueToStorageTask(void*) {
     for(;;)
     { 
 

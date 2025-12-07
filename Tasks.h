@@ -34,25 +34,25 @@ extern QueueHandle_t LogsToStoreQueue;
 
 extern QueueHandle_t JoystickStateQueue;
 
-void intializeSemaphoresAndQueues(void);
+void intializeSemaphoresAndQueues();
 
-void getClockTimeTask(void);
+void getClockTimeTask(void*);
 
-void readBME280Task(void); 
-void readSHT40Task(void);
-void readSCD41Task(void);
+void readBME280Task(void*); 
+void readSHT40Task(void*);
+void readSCD41Task(void*);
 
-void dataManagerTask(void);
+void dataManagerTask(void*);
 
-void valuesChangedGUITask(void);
-void timeChangedGUITask(void);
+void valuesChangedGUITask(void*);
+void timeChangedGUITask(void*);
 
-void joystickEvaluationTask(void);
-void joystickActionGUITask(void);
+void joystickEvaluationTask(void*);
+void joystickActionGUITask(void*);
 
-void writeLogTask(void);
+void writeLogTask(void*);
 
-void writeValueToStorageTask(void);
+void writeValueToStorageTask(void*);
 
 #ifdef __cplusplus
 }

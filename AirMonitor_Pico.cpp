@@ -5,11 +5,13 @@
 #include <wchar.h>
 #include "ili9341.h"
 #include "gfx.h"
-#include "Window.h"
+#include "GUIManager.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "Tasks.h"
 #include "Clock.h"
 #include "Log.h"
+#include "Window.h"
 
 #include "scd4x_i2c.h"
 #include "sensirion_common.h"
@@ -253,7 +255,7 @@ void scd41() {
 int main()
 {
     stdio_init_all();
-
+/*
     scd41();
 
     initClock();
@@ -263,16 +265,32 @@ int main()
     sleep_ms(2000);
     LOG("Initializing");
 
-    
+    */
 
     InitializeDisplay(FOREGROUND);
 
     initDiacritic();
 
-    MainWindow* window = new MainWindow{};
+    gui_init();
 
-    xTaskCreate(vTaskIncrementPrint, "Increment and Print", 1000, NULL, 1, NULL);
+    sleep_ms(10000);
+
+    intializeSemaphoresAndQueues();
+
+    //xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 1, NULL);
+    xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 1, NULL);
+    xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 1, NULL);
+    xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 1, NULL);
+    xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
+    xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
+    //xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
+    //xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 1, NULL);
+    //xTaskCreate(joystickActionGUITask,      "joystickActionGUITask",      1000, NULL, 1, NULL);
+    //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);
+    //xTaskCreate(writeValueToStorageTask,    "writeValueToStorageTask",    1000, NULL, 1, NULL);
     vTaskStartScheduler();
 
+    for (;;) {
+    }
     return 0;
 }

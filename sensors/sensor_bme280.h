@@ -10,12 +10,13 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /* Basic measurement set for BME280 (T + RH + Pressure) */
 typedef struct {
-    float temperature_c;
-    float humidity_rh;
-    float pressure_pa;
+    int32_t temperature_c;
+    int32_t humidity_rh;
+    int32_t pressure_pa;
 } sensor_bme280_data_t;
 
 /* Initialize the sensor (I2C, pins, etc.). Return true on success. */

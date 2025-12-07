@@ -33,8 +33,9 @@ public:
     SensorWidget(QUANTITY t);
     virtual ~SensorWidget();
 
-    void showValue(int32_t value);
+    void setValue(int32_t value);
     void update() override;
+    void initialize();
 
     uint32_t (*iconBitmap)[32];
 
@@ -47,6 +48,7 @@ private:
     Text* valueText;
     Text* unitsText;
     bool childrenAdded;
+    bool initialized;
     wchar_t valueBuffer[16];
     wchar_t unitsBuffer[12];
 };

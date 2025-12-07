@@ -78,10 +78,11 @@ MainWindow::MainWindow()
     currentWidget = static_cast<NavigableWidget*>(temperatureWidget);
 
     // initial paint for all widget areas via their update() method
-    if (temperatureWidget) temperatureWidget->update();
-    if (humidityWidget)    humidityWidget->update();
-    if (pressureWidget)   pressureWidget->update();
-    if (co2Widget)         co2Widget->update();
+    
+    if (temperatureWidget) { temperatureWidget->initialize(); temperatureWidget->update(); }
+    if (humidityWidget)    { humidityWidget->initialize();    humidityWidget->update(); }
+    if (pressureWidget)    { pressureWidget->initialize();   pressureWidget->update(); }
+    if (co2Widget)         { co2Widget->initialize();         co2Widget->update(); }
     if (timeWidget)        timeWidget->update();
     if (settingWidget)     settingWidget->update();
 
@@ -93,6 +94,28 @@ MainWindow::MainWindow()
 
     GFX_flush();
 }
+
+SensorWidget* MainWindow::getWidgetByType(QUANTITY type)
+{
+    if(QUANTITY_TEMPERATURE == type)
+    {
+        return temperatureWidget;
+    }
+    else if(QUANTITY_CO2 == type)
+    {
+        return co2Widget;
+    }
+    else if(QUANTITY_HUMIDITY == type)
+    {
+        return humidityWidget;
+    }
+    else if(QUANTITY_PRESSURE == type)
+    {
+        return pressureWidget;
+    }
+    return nullptr;
+}
+
 MainWindow::~MainWindow()
 {
 

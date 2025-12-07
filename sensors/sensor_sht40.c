@@ -14,9 +14,9 @@ bool sensor_sht40_init(void) {
 bool sensor_sht40_read(sensor_sht40_data_t* out) {
     if (!out) return false;
     // TODO: perform measurement read
-    out->temperature_c = 0.0f;
-    out->humidity_rh = 0.0f;
-    return false; // stub: indicate no real data yet
+    out->temperature_c = 22;
+    out->humidity_rh = 1235;
+    return true; // stub: indicate no real data yet
 }
 
 void sensor_sht40_deinit(void) {

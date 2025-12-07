@@ -14,10 +14,10 @@ bool sensor_sdc41_init(void) {
 bool sensor_sdc41_read(sensor_sdc41_data_t* out) {
     if (!out) return false;
     // TODO: perform measurement read
-    out->co2_ppm = 0.0f;
-    out->temperature_c = 0.0f;
-    out->humidity_rh = 0.0f;
-    return false; // stub: indicate no real data yet
+    out->co2_ppm = 789;
+    out->temperature_c = 5985;
+    out->humidity_rh = 11;
+    return true; // stub: indicate no real data yet
 }
 
 void sensor_sdc41_deinit(void) {

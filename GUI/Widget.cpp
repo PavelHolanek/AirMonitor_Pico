@@ -45,7 +45,8 @@ SensorWidget::SensorWidget(QUANTITY t)
       arrow(nullptr),
       valueText(nullptr),
       unitsText(nullptr),
-      childrenAdded(false)
+      childrenAdded(false),
+      initialized(false)
 {
     valueBuffer[0] = L'\0';
     unitsBuffer[0] = L'\0';
@@ -70,7 +71,7 @@ SensorWidget::~SensorWidget()
     if (unitsText) { delete unitsText; unitsText = nullptr; }
 }
 
-void SensorWidget::showValue(int32_t value)
+void SensorWidget::setValue(int32_t value)
 {
     // Update the internal buffer; actual drawing occurs in update()
     swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", (long)value);
@@ -82,14 +83,40 @@ void SensorWidget::showValue(int32_t value)
 void SensorWidget::update()
 {
     if (!area) return;
+    if (!initialized) initialize();
 
-    // Lazy initialize children
+    // Update only dynamic parts: colors, value text, arrow
+    Color bg = area->backgroundColor;
+    Color fg = area->color;
+
+    pictogram->backgroundColor = bg;
+    pictogram->color = fg;
+
+    arrow->backgroundColor = bg;
+    arrow->color = fg;
+
+    valueText->backgroundColor = bg;
+    valueText->color = fg;
+    // value text content may have been updated via setValue()
+    valueText->str = valueBuffer;
+
+    unitsText->backgroundColor = bg;
+    unitsText->color = fg;
+
+    // Repaint area and children
+    area->Paint();
+}
+
+void SensorWidget::initialize()
+{
+    if (!area || initialized) return;
+
     if (!pictogram) pictogram = new bitMap32();
     if (!arrow) arrow = new bitMap32();
-    if (!valueText) valueText = new Text(L"");
+    if (!valueText) valueText = new Text(L"--");
     if (!unitsText) unitsText = new Text(L"");
 
-    // Convert units (ASCII) into wide buffer
+    // Convert units (ASCII) into wide buffer once
     unitsBuffer[0] = L'\0';
     if (units) {
         size_t i = 0;
@@ -102,28 +129,14 @@ void SensorWidget::update()
     }
     unitsText->str = unitsBuffer;
 
-    // Assign bitmap data pointers
-    pictogram->data = iconBitmap; // pictogram from external source if provided
+    // Assign bitmap data pointers once
+    pictogram->data = iconBitmap;
 
-    // Colors and sizes from parent area
-    Color bg = area->backgroundColor;
-    Color fg = area->color;
-
-    pictogram->backgroundColor = bg;
-    pictogram->color = fg;
-
-    arrow->backgroundColor = bg;
-    arrow->color = fg;
-
-    valueText->backgroundColor = bg;
-    valueText->color = fg;
+    // Set static text sizes
     valueText->textSize = 3;
-
-    unitsText->backgroundColor = bg;
-    unitsText->color = fg;
     unitsText->textSize = 2;
 
-    // Layout calculations
+    // Static layout (positions and sizes won't change)
     const uint16_t ax = area->posX;
     const uint16_t ay = area->posY;
     const uint16_t aw = area->sizeX;
@@ -157,8 +170,7 @@ void SensorWidget::update()
         childrenAdded = true;
     }
 
-    // Paint area and contained elements
-    area->Paint();
+    initialized = true;
 }
 
 SettingsWidget::SettingsWidget()

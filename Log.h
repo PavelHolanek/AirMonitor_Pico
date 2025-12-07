@@ -5,9 +5,8 @@
 extern "C" {
 #endif
 
-#define LOGS_NUMBER
+#define LOGS_NUMBER 10
 
-char* logsToSave[LOGS_NUMBER];
 void LOG(const char* message);
 
 #ifdef __cplusplus

@@ -14,10 +14,10 @@ bool sensor_bme280_init(void) {
 bool sensor_bme280_read(sensor_bme280_data_t* out) {
     if (!out) return false;
     // TODO: perform measurement read
-    out->temperature_c = 0.0f;
-    out->humidity_rh = 0.0f;
-    out->pressure_pa = 0.0f;
-    return false; // stub: indicate no real data yet
+    out->temperature_c = 89;
+    out->humidity_rh = 7899;
+    out->pressure_pa = 578;
+    return true; // stub: indicate no real data yet
 }
 
 void sensor_bme280_deinit(void) {
