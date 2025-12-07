@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "semphr.h"
+#include <stdio.h>
 
 Time getClockTime()
 {
@@ -38,9 +39,10 @@ Time getClockTimeImpl()
 
 void initClock()
 {
-    ds3231_init(&ds3231, i2c_default, DS3231_DEVICE_ADRESS, AT24C32_EEPROM_ADRESS_0);
+    printf("1");
+    ds3231_init(&ds3231, &i2c1_inst, DS3231_DEVICE_ADRESS, AT24C32_EEPROM_ADRESS_0);
     sleep_ms(200);
-
+    printf("2");
     /* Initiliaze I2C line. */
     gpio_init(SDA_PIN_CLOCK);
     gpio_init(SDL_PIN_CLOCK);
@@ -61,8 +63,7 @@ void initClock()
         .century = 1,
         .am_pm = false
     };
-
+    printf("3");
     ds3231_configure_time(&ds3231, &ds3231_data);
-
-    LOG("Clock initialized");
+    printf("4");
 }

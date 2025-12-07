@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-#define SDA_PIN_CLOCK 20
-#define SDL_PIN_CLOCK 21
+#define SDA_PIN_CLOCK 18
+#define SDL_PIN_CLOCK 19
 
 static ds3231_t ds3231;
 

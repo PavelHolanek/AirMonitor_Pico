@@ -142,9 +142,9 @@ void dataManagerTask(void*) {
     sensor_sht40_data_t sht40value;
     sensor_bme280_data_t bme280value;
 
-    uint16_t temperature;
-    uint16_t humidity;
-    uint16_t preassure;
+    int32_t temperature;
+    int32_t humidity;
+    int32_t preassure;
     uint16_t co2;
 
     for(;;)

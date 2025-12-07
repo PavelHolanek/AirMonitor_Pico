@@ -14,7 +14,7 @@ extern "C" {
 
 /* Basic measurement set for SDC41 (CO2 + T + RH) */
 typedef struct {
-    int32_t co2_ppm;
+    uint16_t co2_ppm;
     int32_t temperature_c;
     int32_t humidity_rh;
 } sensor_sdc41_data_t;
