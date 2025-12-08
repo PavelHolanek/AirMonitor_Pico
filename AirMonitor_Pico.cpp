@@ -15,6 +15,7 @@
 #include <inttypes.h>  // PRIx64
 #include "sensor_sdc41.h"
 #include "sensor_sht40.h"
+#include "sensor_bme280.h"
 
 #ifndef __DISPLAYTEST_H__
 #define __DISPLAYTEST_H__
@@ -165,6 +166,8 @@ int main()
     sensor_sdc41_init();
     printf("Initializing sht40\n");
     sensor_sht40_init();
+    printf("Initializing bmp280\n");
+    sensor_bme280_init();
 
     printf("Initializing display\n");
     InitializeDisplay(FOREGROUND);

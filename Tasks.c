@@ -154,7 +154,7 @@ void dataManagerTask(void*) {
         xQueueReceive(BME280DataQueue, &bme280value, portMAX_DELAY);
         printf("dataManagerTask2 \n");
         //TODO moving average
-        temperature = sht40value.temperature_c;
+        temperature = bme280value.temperature_c;
         humidity = sht40value.humidity_rh;
         preassure = bme280value.pressure_pa;
         co2 = sdc41value.co2_ppm;

@@ -75,6 +75,7 @@ add_subdirectory(libraries/pico-extras)
 add_subdirectory(libraries/ds3231)
 add_subdirectory(libraries/embedded-i2c-scd4x)
 add_subdirectory(libraries/embedded-i2c-sht4x)
+add_subdirectory(libraries/bmp280)
 
 # Add the standard library to the build
 target_link_libraries(AirMonitor_Pico
@@ -95,9 +96,10 @@ target_link_libraries(AirMonitor_Pico
         hardware_spi
         ili9488
         gfx
-	pico_ds3231
-	scd4x
+		pico_ds3231
+		scd4x
         sht4x
+		bmp280
         )
 
 pico_add_extra_outputs(AirMonitor_Pico)
