@@ -73,7 +73,7 @@
 void bmp280_init() {
     // use the "handheld device dynamic" optimal setting (see datasheet)
     uint8_t buf[2];
-
+    
     // 500ms sampling time, x16 filter
     const uint8_t reg_config_val = ((0x04 << 5) | (0x05 << 2)) & 0xFC;
 

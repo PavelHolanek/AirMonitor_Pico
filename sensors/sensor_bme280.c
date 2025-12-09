@@ -22,11 +22,14 @@ bool sensor_bme280_init(void) {
     gpio_pull_up(BMP280_I2C_SDA_PIN);
     gpio_pull_up(BMP280_I2C_SCL_PIN);
 
+    printf("1");
+
     // configure BMP280
     bmp280_init();
-
+    printf("2");
     // retrieve fixed compensation params
     bmp280_get_calib_params(&params);
+    printf("3");
     sleep_ms(250);
     return true; // stub: report initialized
 }
@@ -37,8 +40,8 @@ bool sensor_bme280_read(sensor_bme280_data_t* out) {
     bmp280_read_raw(&raw_temperature, &raw_pressure);
     int32_t temperature = bmp280_convert_temp(raw_temperature, &params);
     int32_t pressure = bmp280_convert_pressure(raw_pressure, raw_temperature, &params);
-    printf("Pressure = %.3f kPa\n", raw_pressure / 1000.f);
-    printf("Temp. = %.2f C\n", raw_temperature / 100.f);
+    printf("Pressure = %.3f kPa\n", pressure / 1000.f);
+    printf("Temp. = %.2f C\n", temperature / 100.f);
 
     out->temperature_c = temperature;
     out->humidity_rh = 0;

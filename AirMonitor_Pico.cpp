@@ -160,14 +160,17 @@ int main()
     sleep_ms(10000);
 
     printf("Initializing clock\n");
-    initClock();
+    //initClock();
+    sleep_ms(250);
 
-    printf("Initializing sdc41\n");
-    sensor_sdc41_init();
-    printf("Initializing sht40\n");
-    sensor_sht40_init();
     printf("Initializing bmp280\n");
     sensor_bme280_init();
+
+    printf("Initializing sht40\n");
+    sensor_sht40_init();
+    
+    printf("Initializing sdc41\n");
+    sensor_sdc41_init();
 
     printf("Initializing display\n");
     InitializeDisplay(FOREGROUND);

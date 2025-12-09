@@ -43,9 +43,9 @@ BME280DataQueue = xQueueCreate(1, sizeof(sensor_bme280_data_t));
 SHT40DataQueue = xQueueCreate(1, sizeof(sensor_sht40_data_t));
 SDC41DataQueue = xQueueCreate(1, sizeof(sensor_sdc41_data_t));
 
-TemperatureQueue = xQueueCreate(1, sizeof(uint16_t));
-PreassureQueue = xQueueCreate(1, sizeof(uint16_t));
-HumidityQueue = xQueueCreate(1, sizeof(uint16_t));
+TemperatureQueue = xQueueCreate(1, sizeof(int32_t));
+PreassureQueue = xQueueCreate(1, sizeof(int32_t));
+HumidityQueue = xQueueCreate(1, sizeof(int32_t));
 CO2Queue = xQueueCreate(1, sizeof(uint16_t));
 
 TimeRequestSemaphore  = xSemaphoreCreateBinary();
@@ -170,9 +170,9 @@ void dataManagerTask(void*) {
 }
 
 void valuesChangedGUITask(void*) {
-    uint16_t temperature;
-    uint16_t humidity;
-    uint16_t preassure;
+    int32_t temperature;
+    int32_t humidity;
+    int32_t preassure;
     uint16_t co2;
     for(;;)
     { 
