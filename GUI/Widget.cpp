@@ -137,8 +137,8 @@ void SensorWidget::initialize()
     pictogram->data = iconBitmap;
 
     // Set static text sizes
-    valueText->textSize = 3;
-    unitsText->textSize = 2;
+    valueText->textSize = 4;
+    unitsText->textSize = 3;
 
     // Static layout (positions and sizes won't change)
     const uint16_t ax = area->posX;

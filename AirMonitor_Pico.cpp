@@ -157,7 +157,7 @@ int main()
 {
     stdio_init_all();
 
-    sleep_ms(10000);
+    sleep_ms(7000);
 
     printf("Initializing clock\n");
     //initClock();

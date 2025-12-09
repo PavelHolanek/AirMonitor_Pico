@@ -31,7 +31,7 @@ MainWindow::MainWindow()
                                            SENSOR_WIDGET_WIDTH,
                                            SENSOR_WIDGET_HEIGHT);
         // ensure area has background and foreground colors
-        temperatureWidget->area->backgroundColor = PARAM_COLOR_WHITE;
+        temperatureWidget->area->backgroundColor = PARAM_COLOR_GRAY_1;
         temperatureWidget->area->color = COLOR_TEMPERATURE;
     }
 
@@ -40,7 +40,7 @@ MainWindow::MainWindow()
                                         PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - SENSOR_WIDGET_MARGIN,
                                         SENSOR_WIDGET_WIDTH,
                                         SENSOR_WIDGET_HEIGHT);
-        humidityWidget->area->backgroundColor = PARAM_COLOR_WHITE;
+        humidityWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         humidityWidget->area->color = COLOR_HUMIDITY;
     }
 
@@ -49,7 +49,7 @@ MainWindow::MainWindow()
                                          HEADER_HEIGHT + SENSOR_WIDGET_MARGIN,
                                          SENSOR_WIDGET_WIDTH,
                                          SENSOR_WIDGET_HEIGHT);
-        pressureWidget->area->backgroundColor = PARAM_COLOR_WHITE;
+        pressureWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         pressureWidget->area->color = COLOR_PRESSURE;
     }
 
@@ -58,18 +58,18 @@ MainWindow::MainWindow()
                                    PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - SENSOR_WIDGET_MARGIN,
                                    SENSOR_WIDGET_WIDTH,
                                    SENSOR_WIDGET_HEIGHT);
-        co2Widget->area->backgroundColor = PARAM_COLOR_WHITE;
+        co2Widget->area->backgroundColor = PARAM_COLOR_BLACK;
         co2Widget->area->color = COLOR_CO2;
     }
 
     if (timeWidget) {
         timeWidget->area = new Area(PARAM_SCREEN_WIDTH / 2 + HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
-        timeWidget->area->backgroundColor = PARAM_COLOR_BLUE;
+        timeWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         timeWidget->area->color = PARAM_COLOR_WHITE;
     }
     if (settingWidget) {
         settingWidget->area = new Area(HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
-        settingWidget->area->backgroundColor = PARAM_COLOR_BLUE;
+        settingWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         settingWidget->area->color = PARAM_COLOR_WHITE;
     }
 

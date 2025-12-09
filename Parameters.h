@@ -21,6 +21,8 @@ constexpr Color PARAM_COLOR_RED   = {0xFF, 0x00, 0x00};
 constexpr Color PARAM_COLOR_GREEN = {0x00, 0xFF, 0x00};
 constexpr Color PARAM_COLOR_BLUE  = {0x00, 0x00, 0xFF};
 
+constexpr Color PARAM_COLOR_GRAY_1  = {0xC0, 0xC0, 0xC0};
+
 // Default UI / layout constants
 constexpr uint8_t PARAM_DEFAULT_TEXT_SIZE = 2;
 constexpr uint8_t PARAM_MAX_TEXT_SIZE = 6;
@@ -47,8 +49,8 @@ constexpr uint8_t SENSOR_WIDGET_CORNER_RADIUS = 12;
 constexpr uint8_t SENSOR_WIDGET_TEXT_SIZE = 4;
 
 // Sensor-specific colors (currently green placeholders)
-constexpr Color COLOR_TEMPERATURE = {0x00, 0xFF, 0x00};
-constexpr Color COLOR_PRESSURE    = {0x00, 0xFF, 0x00};
-constexpr Color COLOR_HUMIDITY    = {0x00, 0xFF, 0x00};
-constexpr Color COLOR_CO2         = {0x00, 0xFF, 0x00};
+constexpr Color COLOR_TEMPERATURE = {0xFF, 0x40, 0x00};
+constexpr Color COLOR_PRESSURE    = {0xC0, 0x00, 0x78};
+constexpr Color COLOR_HUMIDITY    = {0x50, 0x50, 0xF0};
+constexpr Color COLOR_CO2         = {0x64, 0xDC, 0x14};
 #endif // PARAMETERS_H
