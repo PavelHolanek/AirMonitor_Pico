@@ -21,7 +21,7 @@ MainWindow::MainWindow()
     co2Widget         = new SensorWidget(QUANTITY_CO2);
 
     // time and settings are generic navigable widgets
-    timeWidget    = new NavigableWidget();
+    timeWidget    = new TimeWidget();
     settingWidget = new SettingsWidget();
 
     // create simple area layouts for each widget (positions/sizes are examples)

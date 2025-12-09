@@ -21,7 +21,7 @@ constexpr Color PARAM_COLOR_RED   = {0xFF, 0x00, 0x00};
 constexpr Color PARAM_COLOR_GREEN = {0x00, 0xFF, 0x00};
 constexpr Color PARAM_COLOR_BLUE  = {0x00, 0x00, 0xFF};
 
-constexpr Color PARAM_COLOR_GRAY_1  = {0xC0, 0xC0, 0xC0};
+constexpr Color PARAM_COLOR_GRAY_1  = {0xA0, 0xA0, 0xA0};
 
 // Default UI / layout constants
 constexpr uint8_t PARAM_DEFAULT_TEXT_SIZE = 2;
@@ -35,11 +35,11 @@ constexpr uint16_t PARAM_DEFAULT_PADDING = 3;
 constexpr uint8_t PARAM_MAX_CHILDREN_PER_AREA = 4;
 
 //MAIN WINDOW
-constexpr uint8_t HEADER_HEIGHT = 75;
+constexpr uint8_t HEADER_HEIGHT = 60;
 constexpr uint8_t HEADER_MARGIN = 12;
 constexpr Color MAIN_WINDOW_BACKGROUND = PARAM_COLOR_BLACK;
 
-constexpr uint8_t BODY_HEIGHT = PARAM_SCREEN_HEIGHT - HEADER_HEIGHT;
+constexpr uint16_t BODY_HEIGHT = PARAM_SCREEN_HEIGHT - HEADER_HEIGHT;
 
 constexpr uint8_t SENSOR_WIDGET_MARGIN = 12;
 constexpr uint8_t SENSOR_WIDGET_PADDING = 12;

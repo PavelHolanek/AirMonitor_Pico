@@ -28,7 +28,7 @@ public:
     SensorWidget* humidityWidget;
     SensorWidget* pressureWidget;
     SensorWidget* co2Widget;
-    Widget* timeWidget;
+    TimeWidget* timeWidget;
     Widget* settingWidget;
 
     void enterQuantityWindow(QUANTITY);

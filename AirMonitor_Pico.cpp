@@ -160,7 +160,7 @@ int main()
     sleep_ms(7000);
 
     printf("Initializing clock\n");
-    //initClock();
+    initClock();
     sleep_ms(250);
 
     printf("Initializing bmp280\n");
@@ -181,13 +181,13 @@ int main()
 
     printf("Initializing freeRTOS kernel\n");
     intializeSemaphoresAndQueues();
-    //xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 1, NULL);
+    xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 10, NULL);
     xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 1, NULL);
     xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 1, NULL);
     xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 1, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
     xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
-    //xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
+    xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
     //xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 1, NULL);
     //xTaskCreate(joystickActionGUITask,      "joystickActionGUITask",      1000, NULL, 1, NULL);
     //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);

@@ -40,8 +40,6 @@ bool sensor_bme280_read(sensor_bme280_data_t* out) {
     bmp280_read_raw(&raw_temperature, &raw_pressure);
     int32_t temperature = bmp280_convert_temp(raw_temperature, &params);
     int32_t pressure = bmp280_convert_pressure(raw_pressure, raw_temperature, &params);
-    printf("Pressure = %.3f kPa\n", pressure / 1000.f);
-    printf("Temp. = %.2f C\n", temperature / 100.f);
 
     out->temperature_c = temperature;
     out->humidity_rh = 0;

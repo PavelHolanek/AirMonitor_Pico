@@ -8,6 +8,8 @@
 extern void gui_init();
 
 extern void gui_dataChanged(QUANTITY type, int32_t value);
+
+extern void gui_timeChanged(Time CurerntTime);
 //extern void gui_joystickMoved();
 
 //extern void gui_showErrorMessage(const char* message);

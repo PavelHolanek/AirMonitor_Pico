@@ -26,7 +26,7 @@
  */
 
  // device has default bus address of 0x76
-#define ADDR _u(0x76)
+#define ADDR _u(0x77)
 
 // hardware registers
 #define REG_CONFIG _u(0xF5)

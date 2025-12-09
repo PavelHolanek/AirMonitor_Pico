@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include "GraphicElement.h"
+#include "Clock.h"
 
 class Widget
 {
@@ -65,4 +66,20 @@ public:
 private:
     Text* title;
 };
+class TimeWidget : public Widget
+{
+public:
+    TimeWidget();
+    virtual ~TimeWidget();
+
+    void update() override;
+    void setTime(const Time& t);
+    Time getTime() const;
+
+private:
+    Text* timeText;
+    Time time;
+    wchar_t buffer[16];
+};
+
 #endif // WIDGET_H

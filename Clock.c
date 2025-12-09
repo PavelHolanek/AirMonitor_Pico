@@ -29,7 +29,7 @@ Time getClockTimeImpl()
     else
     {
         t.month = ds3231_data.month;
-        t.day = ds3231_data.day;
+        t.day = ds3231_data.date;
         t.hour = ds3231_data.hours;
         t.minute = ds3231_data.minutes;
         t.second = ds3231_data.seconds;
@@ -49,16 +49,18 @@ void initClock()
     gpio_pull_up(SDL_PIN_CLOCK);
     i2c_init(ds3231.i2c, 400 * 1000);
 
+    #ifdef SETUP_TIME
     ds3231_data_t ds3231_data = {
-        .seconds = 25,
-        .minutes = 30,
-        .hours = 1,
-        .day = 5,
-        .date = 21,
-        .month = 11,
+        .seconds = 00,
+        .minutes = 20,
+        .hours = 20,
+        .day = 2,
+        .date = 9,
+        .month =12,
         .year = 25,
         .century = 1,
         .am_pm = false
     };
     ds3231_configure_time(&ds3231, &ds3231_data);
+    #endif
 }

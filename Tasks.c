@@ -56,6 +56,7 @@ LogsToStoreQueue = xQueueCreate(8, sizeof(char*));
 JoystickStateQueue = xQueueCreate(1, sizeof(uint8_t));
 
 sensorsMeassurementPeriod = 30000;
+timeUpdatePeriod = 30000;
 }
 void getClockTimeTask(void*) {
     Time value;
@@ -72,7 +73,7 @@ void readBME280Task(void*) {
     for(;;)
     {
         xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
-        printf("readBME280Task \n");
+        LOG("readBME280Task");
         if (sensor_bme280_read(&value))
         {
             if(xQueueSend(BME280DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -95,7 +96,7 @@ void readSHT40Task(void*) {
     for(;;)
     { 
         xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
-        printf("readSHT40Task \n");
+        LOG("readSHT40Task");
         if (sensor_sht40_read(&value))
         {
             if(xQueueSend(SHT40DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -118,7 +119,7 @@ void readSCD41Task(void*) {
     for(;;)
     { 
         xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
-        printf("readSCD41Task \n");
+        LOG("readSCD41Task");
         if (sensor_sdc41_read(&value))
         {
             if(xQueueSend(SDC41DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
@@ -137,7 +138,6 @@ void readSCD41Task(void*) {
 }
 
 void dataManagerTask(void*) {
-    printf("dataManagerTask1 \n");
     sensor_sdc41_data_t sdc41value;
     sensor_sht40_data_t sht40value;
     sensor_bme280_data_t bme280value;
@@ -152,7 +152,6 @@ void dataManagerTask(void*) {
         xQueueReceive(SDC41DataQueue, &sdc41value, portMAX_DELAY);
         xQueueReceive(SHT40DataQueue, &sht40value, portMAX_DELAY);
         xQueueReceive(BME280DataQueue, &bme280value, portMAX_DELAY);
-        printf("dataManagerTask2 \n");
         //TODO moving average
         temperature = bme280value.temperature_c;
         humidity = sht40value.humidity_rh;
@@ -181,8 +180,6 @@ void valuesChangedGUITask(void*) {
         xQueueReceive(HumidityQueue, &humidity, portMAX_DELAY);
         xQueueReceive(CO2Queue, &co2, portMAX_DELAY);
 
-        printf("valuesChangedGUITask \n");
-
         gui_dataChanged(QUANTITY_TEMPERATURE, temperature);
         gui_dataChanged(QUANTITY_PRESSURE, preassure);
         gui_dataChanged(QUANTITY_HUMIDITY, humidity);
@@ -191,9 +188,12 @@ void valuesChangedGUITask(void*) {
 }
 
 void timeChangedGUITask(void*) {
+    Time currentTime;
     for(;;)
-    { 
-
+    {
+        currentTime = getClockTime();
+        gui_timeChanged(currentTime);
+        vTaskDelay(pdMS_TO_TICKS(timeUpdatePeriod));
     }
 }
 

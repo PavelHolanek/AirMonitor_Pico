@@ -13,7 +13,6 @@ void gui_dataChanged(QUANTITY type, int32_t value)
 {
     if (currentWindow == reinterpret_cast<Window*>(mainWindow))
     {
-        printf("gui_dataChanged: %d \n", value);
         mainWindow->getWidgetByType(type)->setValue(value);
         mainWindow->getWidgetByType(type)->update();
     }
@@ -25,6 +24,15 @@ void gui_init()
     printf("gui_init \n");
     mainWindow = new MainWindow{};
     currentWindow = reinterpret_cast<Window*>(mainWindow); //implement switchWindow function
+}
+
+void gui_timeChanged(Time CurerntTime)
+{
+    mainWindow->timeWidget->setTime(CurerntTime);
+    if (currentWindow == reinterpret_cast<Window*>(mainWindow))
+    {
+        mainWindow->timeWidget->update();
+    }
 }
 
 }
