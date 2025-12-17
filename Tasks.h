@@ -14,10 +14,10 @@ extern "C" {
 #define TICKS_TO_WAIT 1000
 #define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(200)
 
-extern SemaphoreHandle_t i2c0_semaphore;
-extern SemaphoreHandle_t i2c1_semaphore;
-extern SemaphoreHandle_t spi0_semaphore;
-extern SemaphoreHandle_t spi1_semaphore;
+extern SemaphoreHandle_t i2c0_mutex;
+extern SemaphoreHandle_t i2c1_mutex;
+extern SemaphoreHandle_t spi0_mutex;
+extern SemaphoreHandle_t spi1_mutex;
 
 extern QueueHandle_t BME280DataQueue;
 extern QueueHandle_t SHT40DataQueue;

@@ -11,10 +11,10 @@
 #include <stdio.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 
-SemaphoreHandle_t i2c0_semaphore = NULL;
-SemaphoreHandle_t i2c1_semaphore = NULL;
-SemaphoreHandle_t spi0_semaphore = NULL;
-SemaphoreHandle_t spi1_semaphore = NULL;
+SemaphoreHandle_t i2c0_mutex = NULL;
+SemaphoreHandle_t i2c1_mutex = NULL;
+SemaphoreHandle_t spi0_mutex = NULL;
+SemaphoreHandle_t spi1_mutex = NULL;
 
 QueueHandle_t BME280DataQueue = NULL;
 QueueHandle_t SHT40DataQueue = NULL;
@@ -36,10 +36,10 @@ QueueHandle_t JoystickStateQueue = NULL;
 
 void intializeSemaphoresAndQueues()
 {
-    i2c0_semaphore = xSemaphoreCreateMutex();
-    i2c1_semaphore = xSemaphoreCreateMutex();
-    spi0_semaphore = xSemaphoreCreateMutex();
-    spi1_semaphore = xSemaphoreCreateMutex();
+    i2c0_mutex = xSemaphoreCreateMutex();
+    i2c1_mutex = xSemaphoreCreateMutex();
+    spi0_mutex = xSemaphoreCreateMutex();
+    spi1_mutex = xSemaphoreCreateMutex();
 
     BME280DataQueue = xQueueCreate(1, sizeof(sensor_bme280_data_t));
     SHT40DataQueue = xQueueCreate(1, sizeof(sensor_sht40_data_t));
@@ -77,7 +77,7 @@ void readBME280Task(void*) {
     sensor_bme280_data_t value;
     for(;;)
     {
-        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        xSemaphoreTake(i2c0_mutex, portMAX_DELAY);
         LOG("TASK: readBME280");
         if (sensor_bme280_read(&value))
         {
@@ -91,7 +91,7 @@ void readBME280Task(void*) {
             LOG("Failed to read data from BME280");
         }
         
-        xSemaphoreGive(i2c0_semaphore);
+        xSemaphoreGive(i2c0_mutex);
         vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
     }
 }
@@ -100,7 +100,7 @@ void readSHT40Task(void*) {
     sensor_sht40_data_t value;
     for(;;)
     { 
-        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        xSemaphoreTake(i2c0_mutex, portMAX_DELAY);
         LOG("TASK: readSHT40");
         if (sensor_sht40_read(&value))
         {
@@ -114,7 +114,7 @@ void readSHT40Task(void*) {
             LOG("Failed to read data from SHT40");
         }
         
-        xSemaphoreGive(i2c0_semaphore);
+        xSemaphoreGive(i2c0_mutex);
         vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
     }
 }
@@ -123,7 +123,7 @@ void readSCD41Task(void*) {
     sensor_sdc41_data_t value;
     for(;;)
     { 
-        xSemaphoreTake(i2c0_semaphore, portMAX_DELAY);
+        xSemaphoreTake(i2c0_mutex, portMAX_DELAY);
         LOG("TASK: readSCD41");
         if (sensor_sdc41_read(&value))
         {
@@ -137,7 +137,7 @@ void readSCD41Task(void*) {
             LOG("Failed to read data from SDC41");
         }
         
-        xSemaphoreGive(i2c0_semaphore);
+        xSemaphoreGive(i2c0_mutex);
         vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
     }
 }
@@ -185,6 +185,7 @@ void valuesChangedGUITask(void*) {
         xQueueReceive(PreassureQueue, &preassure, portMAX_DELAY);
         xQueueReceive(HumidityQueue, &humidity, portMAX_DELAY);
         xQueueReceive(CO2Queue, &co2, portMAX_DELAY);
+        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
 
         LOG("TASK: valuesChangedGUI");
 
@@ -192,6 +193,7 @@ void valuesChangedGUITask(void*) {
         gui_dataChanged(QUANTITY_PRESSURE, preassure);
         gui_dataChanged(QUANTITY_HUMIDITY, humidity);
         gui_dataChanged(QUANTITY_CO2, co2);
+        xSemaphoreGive(spi0_mutex);
     }
 }
 
@@ -199,9 +201,11 @@ void timeChangedGUITask(void*) {
     Time currentTime;
     for(;;)
     {
+        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
         LOG("TASK: timeChangedGUI");
         currentTime = getClockTime();
         gui_timeChanged(currentTime);
+        xSemaphoreGive(spi0_mutex);
         vTaskDelay(pdMS_TO_TICKS(timeUpdatePeriod));
     }
 }
