@@ -22,14 +22,10 @@ bool sensor_bme280_init(void) {
     gpio_pull_up(BMP280_I2C_SDA_PIN);
     gpio_pull_up(BMP280_I2C_SCL_PIN);
 
-    printf("1");
-
     // configure BMP280
     bmp280_init();
-    printf("2");
     // retrieve fixed compensation params
     bmp280_get_calib_params(&params);
-    printf("3");
     sleep_ms(250);
     return true; // stub: report initialized
 }

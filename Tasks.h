@@ -12,6 +12,7 @@ extern "C" {
 #include "semphr.h"
 
 #define TICKS_TO_WAIT 1000
+#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(200)
 
 extern SemaphoreHandle_t i2c0_semaphore;
 extern SemaphoreHandle_t i2c1_semaphore;
@@ -32,6 +33,8 @@ extern QueueHandle_t CurrentTimeQueue;
 
 extern QueueHandle_t LogsToStoreQueue;
 
+extern SemaphoreHandle_t JoystickMoveInteruptionSemaphore;
+extern SemaphoreHandle_t JoystickPressInteruptionSemaphore;
 extern QueueHandle_t JoystickStateQueue;
 
 void intializeSemaphoresAndQueues();
@@ -47,7 +50,8 @@ void dataManagerTask(void*);
 void valuesChangedGUITask(void*);
 void timeChangedGUITask(void*);
 
-void joystickEvaluationTask(void*);
+void joystickPressedTask(void*);
+void joystickMovedTask(void*);
 void joystickActionGUITask(void*);
 
 void writeLogTask(void*);

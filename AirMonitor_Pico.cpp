@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/multicore.h"
 #include "hardware/spi.h"
 #include <string.h>
 #include <wchar.h>
@@ -153,11 +154,31 @@ void vTaskIncrementPrint(void *pvParameters)
     }
 }
 
+#define GPIO_PUSH_PIN 3
+#define GPIO_MOVE_PIN 9
+
+void joystickCallback(uint gpio, uint32_t events) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    if (GPIO_PUSH_PIN == gpio)
+    {
+        xSemaphoreGiveFromISR(JoystickPressInteruptionSemaphore, &xHigherPriorityTaskWoken);
+    }
+    else if (GPIO_MOVE_PIN == gpio)
+    {
+        xSemaphoreGiveFromISR(JoystickMoveInteruptionSemaphore, &xHigherPriorityTaskWoken);
+    }
+}
+
 int main()
 {
     stdio_init_all();
 
     sleep_ms(7000);
+
+    gpio_init(GPIO_PUSH_PIN);
+    gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
+    gpio_init(GPIO_MOVE_PIN);
+    gpio_set_irq_enabled_with_callback(GPIO_MOVE_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
 
     printf("Initializing clock\n");
     initClock();
@@ -181,14 +202,15 @@ int main()
 
     printf("Initializing freeRTOS kernel\n");
     intializeSemaphoresAndQueues();
-    xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 10, NULL);
-    xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 1, NULL);
-    xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 1, NULL);
-    xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 1, NULL);
+    xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
+    xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 2, NULL);
+    xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
+    xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
     xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
     xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
-    //xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 1, NULL);
+    xTaskCreate(joystickPressedTask,        "joystickEvaluationTask",     1000, NULL, 10, NULL);
+    xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);
     //xTaskCreate(joystickActionGUITask,      "joystickActionGUITask",      1000, NULL, 1, NULL);
     //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);
     //xTaskCreate(writeValueToStorageTask,    "writeValueToStorageTask",    1000, NULL, 1, NULL);

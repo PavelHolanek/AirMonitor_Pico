@@ -17,7 +17,7 @@ int32_t humidity_milli_RH = 0;
 
 bool sensor_sht40_init(void) {
     int16_t error = NO_ERROR;
-    sensirion_i2c_hal_init();
+    //sensirion_i2c_hal_init(); already done by BMP280
     sht4x_init(SHT40_I2C_ADDR_44);
 
     sht4x_soft_reset();

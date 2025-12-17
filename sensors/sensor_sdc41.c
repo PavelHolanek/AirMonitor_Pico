@@ -27,9 +27,8 @@ void convert_and_print_serial(uint16_t* serial_raw) {
 
 bool sensor_sdc41_init(void) {
     int16_t error = NO_ERROR;
-    sensirion_i2c_hal_init();
+    //sensirion_i2c_hal_init(); already done by BMP280
     scd4x_init(SCD41_I2C_ADDR_62);
-
     uint16_t serial_number[3] = {0};
     sleep_ms(300);
     // Ensure sensor is in clean state
