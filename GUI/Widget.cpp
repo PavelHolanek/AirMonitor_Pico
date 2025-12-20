@@ -95,8 +95,40 @@ void SensorWidget::deselected()
 
 void SensorWidget::setValue(int32_t value)
 {
-    // Update the internal buffer; actual drawing occurs in update()
-    swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", (long)value);
+    // Format values based on quantity type. For temperature, input is in centi-degrees C
+    // and should be displayed as X,Y (comma as decimal separator) with one decimal,
+    // truncating the remaining digits (e.g., 2535 -> 25,3).
+    if (type == QUANTITY_TEMPERATURE) {
+        int32_t v = value;
+        wchar_t sign[2] = {0};
+        if (v < 0) {
+            sign[0] = L'-';
+            // avoid UB for INT_MIN in absolute value; practical sensor ranges are safe
+            v = -v;
+        }
+        long whole = v / 100;          // centi-degrees to whole degrees
+        long frac1 = (v / 10) % 10;     // first decimal digit (truncated)
+        swprintf(valueBuffer,
+                 sizeof(valueBuffer) / sizeof(valueBuffer[0]),
+                 L"%ls%ld,%ld",
+                 sign,
+                 whole,
+                 frac1);
+    } else if (type == QUANTITY_PRESSURE) {
+        // Pressure value provided in Pa; display hPa as integer by truncation.
+        // Example: 101563 Pa -> "1015"; 99789 Pa -> "997".
+        long hpa = (long)(value / 100); // 1 hPa = 100 Pa
+        swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", hpa);
+    } else if (type == QUANTITY_HUMIDITY) {
+        // Humidity provided in milli-percent RH; display integer percent by truncation.
+        // Example: 53260 mRH -> "53".
+        long percent = (long)(value / 1000);
+        swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", percent);
+    } else {
+        // Default: just print the integer value
+        swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", (long)value);
+    }
+
     if (valueText) {
         valueText->str = valueBuffer;
     }
