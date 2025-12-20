@@ -17,6 +17,7 @@
 #include "sensor_sdc41.h"
 #include "sensor_sht40.h"
 #include "sensor_bme280.h"
+#include "Parameters.h"
 
 #ifndef __DISPLAYTEST_H__
 #define __DISPLAYTEST_H__
@@ -95,17 +96,13 @@ void printLine(uint16_t x, uint16_t y, const wchar_t *wideStr)
     GFX_printf(3, charArray);
 }
 
-void InitializeDisplay(Color color)
+void InitializeDisplay()
 {
     // Initialize display
     puts("Initializing display...");
     LCD_setPins(TFT_DC, TFT_CS, TFT_RST, TFT_SCLK, TFT_MOSI);
     LCD_initDisplay();
     LCD_setRotation(TFT_ROTATION);
-
-    GFX_setTextBack(BACKGROUND);
-    GFX_setTextColor(FOREGROUND);
-    GFX_clearScreen();
 }
 
 void initDiacritic()
@@ -169,38 +166,55 @@ void joystickCallback(uint gpio, uint32_t events) {
     }
 }
 
+int16_t initializationScreenTextPosition = 10;
+void printOnTheScreem(const char* text, uint8_t size = 2)
+{
+    GFX_setCursor(20, initializationScreenTextPosition);
+    GFX_setTextColor(PARAM_COLOR_BLACK);
+    GFX_setTextBack(PARAM_COLOR_WHITE);
+    GFX_printf(size, text);
+    initializationScreenTextPosition += 25;
+}
+
 int main()
 {
     stdio_init_all();
 
     sleep_ms(200);
 
+    printf("Initializing display");
+    InitializeDisplay();
+    initDiacritic();
+
+    printOnTheScreem("Version:");
+    {
+        char commit[41];
+        snprintf(commit, 41, "%s", COMMIT_SHA);
+        printOnTheScreem(commit, 1);
+    }
+
+    printOnTheScreem("Initializing clock");
+    initClock();
+    sleep_ms(250);
+
+    printOnTheScreem("Initializing bmp280");
+    sensor_bme280_init();
+
+    printOnTheScreem("Initializing sht40");
+    sensor_sht40_init();
+    
+    printOnTheScreem("Initializing sdc41");
+    sensor_sdc41_init();
+
+    printOnTheScreem("Initializing joystick");
     gpio_init(GPIO_PUSH_PIN);
     gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
     gpio_init(GPIO_MOVE_PIN);
     gpio_set_irq_enabled_with_callback(GPIO_MOVE_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
 
-    printf("Initializing clock\n");
-    initClock();
-    sleep_ms(250);
-
-    printf("Initializing bmp280\n");
-    sensor_bme280_init();
-
-    printf("Initializing sht40\n");
-    sensor_sht40_init();
-    
-    printf("Initializing sdc41\n");
-    sensor_sdc41_init();
-
-    printf("Initializing display\n");
-    InitializeDisplay(FOREGROUND);
-    initDiacritic();
-    gui_init();
-
     sleep_ms(100);
 
-    printf("Initializing freeRTOS kernel\n");
+    printOnTheScreem("Initializing freeRTOS kernel");
     intializeSemaphoresAndQueues();
     xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 2, NULL);
@@ -214,6 +228,11 @@ int main()
     xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 9, NULL);
     //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);
     //xTaskCreate(writeValueToStorageTask,    "writeValueToStorageTask",    1000, NULL, 1, NULL);
+    
+    sleep_ms(1000);
+
+    gui_init();
+    
     vTaskStartScheduler();
 
     for (;;) {

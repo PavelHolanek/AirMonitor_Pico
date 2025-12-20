@@ -37,6 +37,18 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
+# Run the git command to get the commit SHA
+execute_process(
+    COMMAND git rev-parse --verify HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}  # Ensure the command runs from the root of your repo
+    OUTPUT_VARIABLE COMMIT_SHA
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+
+# Define the commit SHA as a preprocessor macro
+add_definitions(-DCOMMIT_SHA="${COMMIT_SHA}")
+
 add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/GraphicElement.cpp
         GUI/Widget.cpp
