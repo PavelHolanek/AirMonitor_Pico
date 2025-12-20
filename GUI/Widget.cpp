@@ -1,6 +1,7 @@
 #include "Widget.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "Parameters.h"
+#include "Bitmaps.h"
 #include <cstdint>
 #include <cstdio>
 #include <wchar.h>
@@ -169,7 +170,7 @@ void QuantityWidget::initialize()
 {
     if (!area || initialized) return;
 
-    if (!pictogram) pictogram = new bitMap32();
+    if (!pictogram) pictogram = new bitMap48();
     if (!arrow) arrow = new bitMap32();
     if (!valueText) valueText = new Text(L"--");
     if (!unitsText) unitsText = new Text(L"");
@@ -188,7 +189,17 @@ void QuantityWidget::initialize()
     unitsText->str = unitsBuffer;
 
     // Assign bitmap data pointers once
-    pictogram->data = iconBitmap;
+    if (type == QUANTITY_TEMPERATURE) {
+        pictogram->data = (uint8_t (*)[288])&BITMAP48_TEMPERATURE;
+    } else if (type == QUANTITY_HUMIDITY) {
+        pictogram->data = (uint8_t (*)[288])&BITMAP48_HUMIDITY;
+    } else if (type == QUANTITY_CO2) {
+        pictogram->data = (uint8_t (*)[288])&BITMAP48_CO2;
+    } else if (type == QUANTITY_PRESSURE) {
+        pictogram->data = (uint8_t (*)[288])&BITMAP48_PRESSURE;
+    } else {
+        pictogram->data = iconBitmap;
+    }
 
     // Set static text sizes
     valueText->textSize = 4;
@@ -200,9 +211,11 @@ void QuantityWidget::initialize()
     const uint16_t aw = area->sizeX;
     const uint16_t ah = area->sizeY;
 
-    // UL pictogram (assume 32x32)
+    // UL pictogram (assume 48x48)
     pictogram->posX = ax + SENSOR_WIDGET_PADDING;
     pictogram->posY = ay + SENSOR_WIDGET_PADDING;
+
+    // Adjust positions for 48x48 if you want more space for text; keeping as-is for now.
 
     // UR arrow (assume 32x32)
     arrow->posX = ax + aw - SENSOR_WIDGET_PADDING - 32;
@@ -232,7 +245,7 @@ void QuantityWidget::initialize()
 }
 
 SettingsWidget::SettingsWidget()
-    : NavigableWidget(), title(nullptr)
+    : NavigableWidget(), icon(nullptr)
 {
 }
 
@@ -256,33 +269,38 @@ void SettingsWidget::rightMove()
 
 SettingsWidget::~SettingsWidget()
 {
-    if (title) {
-        delete title;
-        title = nullptr;
+    if (icon) {
+        delete icon;
+        icon = nullptr;
     }
 }
 
 void SettingsWidget::update()
 {
-    if (area) {
-        // repaint settings area
-        area->Paint();
+    if (!area) return;
 
-        // Create title lazily and configure it
-        if (!title) {
-            title = new Text(L"Settings");
-            // title->textSize stays default unless changed here
-        }
+    // repaint settings area background
+    area->Paint();
 
-        // Style and position the title within the area
-        title->backgroundColor = area->backgroundColor;
-        title->color = area->color;
-        title->posX = area->posX + PARAM_DEFAULT_PADDING;
-        title->posY = area->posY + PARAM_DEFAULT_PADDING;
-
-        // Paint the title
-        title->Paint();
+    // Create icon lazily and configure it
+    if (!icon) {
+        icon = new bitMap48();
+        // default to settings gear bitmap from Bitmaps.h
+        icon->data = (uint8_t (*)[288])&BITMAP48_SETTINGS;
     }
+
+    // Style and position the icon within the area
+    icon->backgroundColor = area->backgroundColor;
+    icon->color = area->color;
+
+    const uint16_t ax = area->posX;
+    const uint16_t ay = area->posY;
+    // Keep layout similar to QuantityWidget: top-left with padding
+    icon->posX = ax -2;
+    icon->posY = ay + SENSOR_WIDGET_PADDING - 10;
+
+    // Paint the icon
+    icon->Paint();
 }
 
 TimeWidget::TimeWidget()
@@ -345,7 +363,7 @@ void TimeWidget::update()
     const uint16_t pixH = charH;
 
     timeText->posX = area->posX + (area->sizeX > pixW ? (area->sizeX - pixW) / 2 : 0);
-    timeText->posY = area->posY + (area->sizeY > pixH ? (area->sizeY - pixH) / 2 : 0);
+    timeText->posY = area->posY + (area->sizeY > pixH ? (area->sizeY - pixH) / 2 : 0) + 2;
 
     // Paint background (area) and then the time text
     area->Paint();

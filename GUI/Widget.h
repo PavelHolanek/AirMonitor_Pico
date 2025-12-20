@@ -40,7 +40,7 @@ public:
     void update() override;
     void initialize();
 
-    uint32_t (*iconBitmap)[32];
+    uint8_t (*iconBitmap)[288];
 
     const char *units;
     QUANTITY type;
@@ -48,7 +48,7 @@ public:
     void selected() override;
     void deselected() override;
 private:
-    bitMap32* pictogram;
+    bitMap48* pictogram;
     bitMap32* arrow;
     Text* valueText;
     Text* unitsText;
@@ -68,7 +68,7 @@ public:
     void leftMove();
     void rightMove();
 private:
-    Text* title;
+    bitMap48* icon;
 };
 class TimeWidget : public NavigableWidget
 {

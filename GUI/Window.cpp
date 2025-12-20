@@ -69,7 +69,8 @@ MainWindow::MainWindow()
         timeWidget->area->color = PARAM_COLOR_WHITE;
     }
     if (settingWidget) {
-        settingWidget->area = new Area(HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
+        //settingWidget->area = new Area(HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
+        settingWidget->area = new Area(HEADER_MARGIN + SENSOR_WIDGET_PADDING, HEADER_MARGIN, 40, 40);
         settingWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         settingWidget->area->color = PARAM_COLOR_WHITE;
     }

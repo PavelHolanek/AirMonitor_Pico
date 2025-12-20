@@ -67,7 +67,18 @@ public:
     bitMap32();
     virtual ~bitMap32();
     void Paint() override;
-    uint32_t (*data)[32];
+    uint8_t (*data)[128];
+};
+
+
+class bitMap48 : public GraphicElement
+{
+public:
+    bitMap48();
+    virtual ~bitMap48();
+    void Paint() override;
+    // 48 rows * 6 bytes per row = 288 bytes
+    uint8_t (*data)[288];
 };
 
 #endif // GRAPHIC_ELEMENT_H

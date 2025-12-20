@@ -16,6 +16,29 @@ Area::Area() : sizeX(0), sizeY(0), numberOfChildren(0)
         children[i] = nullptr;
     }
 }
+
+void bitMap48::Paint()
+{
+    const uint8_t (*bitmap)[288];
+    if (data) {
+        bitmap = data;
+    } else {
+        bitmap = &BITMAP48_SOLID;
+    }
+    for (int y = 0; y < 48; ++y) {
+        const uint8_t* row = &(*bitmap)[y * 6];
+        for (int xb = 0; xb < 6; ++xb) {
+            uint8_t b = row[xb];
+            for (int bit = 0; bit < 8; ++bit) {
+                if (b & (1u << (7 - bit))) {
+                    int x = xb * 8 + bit;
+                    GFX_drawPixel((int16_t)(posX + x), (int16_t)(posY + y), color);
+                }
+            }
+        }
+    }
+}
+
 Area::Area(uint16_t x, uint16_t y, uint16_t sx, uint16_t sy) : GraphicElement(x, y), sizeX(sx), sizeY(sy), numberOfChildren(0)
 {
     for (uint8_t i = 0; i < MAX_AREA_CHILDREN_COUNT; ++i)
@@ -36,6 +59,11 @@ bitMap32::bitMap32() {
     data = nullptr;
 }
 bitMap32::~bitMap32() {}
+
+bitMap48::bitMap48() {
+    data = nullptr;
+}
+bitMap48::~bitMap48() {}
 
 void Area::addChildren(GraphicElement* child)
 {
@@ -97,12 +125,21 @@ void Line::Paint()
 
 void bitMap32::Paint()
 {
-    const uint32_t (*bitmap)[32] = data ? data : &BITMAP32_SOLID;
+    const uint8_t (*bitmap)[128];
+    if (data) {
+        bitmap = data;
+    } else {
+        bitmap = &BITMAP32_SOLID;
+    }
     for (int y = 0; y < 32; ++y) {
-        uint32_t row = (*bitmap)[y];
-        for (int x = 0; x < 32; ++x) {
-            if (row & (1u << (31 - x))) {
-                GFX_drawPixel((int16_t)(posX + x), (int16_t)(posY + y), color);
+        const uint8_t* row = &(*bitmap)[y * 4];
+        for (int xb = 0; xb < 4; ++xb) {
+            uint8_t b = row[xb];
+            for (int bit = 0; bit < 8; ++bit) {
+                if (b & (1u << (7 - bit))) {
+                    int x = xb * 8 + bit;
+                    GFX_drawPixel((int16_t)(posX + x), (int16_t)(posY + y), color);
+                }
             }
         }
     }
