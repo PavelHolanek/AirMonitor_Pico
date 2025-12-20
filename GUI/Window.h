@@ -22,14 +22,14 @@ public:
 
     void buttonPressed();
     void joystickMoved(uint8_t direction);
-    SensorWidget* getWidgetByType(QUANTITY type);
+    QuantityWidget* getWidgetByType(QUANTITY type);
 
     NavigableWidget* currentWidget;
 
-    SensorWidget* temperatureWidget;
-    SensorWidget* humidityWidget;
-    SensorWidget* pressureWidget;
-    SensorWidget* co2Widget;
+    QuantityWidget* temperatureWidget;
+    QuantityWidget* humidityWidget;
+    QuantityWidget* pressureWidget;
+    QuantityWidget* co2Widget;
     TimeWidget* timeWidget;
     SettingsWidget* settingWidget;
 

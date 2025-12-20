@@ -16,7 +16,7 @@
 #include <inttypes.h>  // PRIx64
 #include "sensor_sdc41.h"
 #include "sensor_sht40.h"
-#include "sensor_bme280.h"
+#include "sensor_bmp280.h"
 #include "Parameters.h"
 
 #ifndef __DISPLAYTEST_H__
@@ -198,7 +198,7 @@ int main()
     sleep_ms(250);
 
     printOnTheScreem("Initializing bmp280");
-    sensor_bme280_init();
+    sensor_bmp280_init();
 
     printOnTheScreem("Initializing sht40");
     sensor_sht40_init();
@@ -217,7 +217,7 @@ int main()
     printOnTheScreem("Initializing freeRTOS kernel");
     intializeSemaphoresAndQueues();
     xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
-    xTaskCreate(readBME280Task,             "readBME280Task",             1000, NULL, 2, NULL);
+    xTaskCreate(readbmp280Task,             "readbmp280Task",             1000, NULL, 2, NULL);
     xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
     xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);

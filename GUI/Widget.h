@@ -30,11 +30,11 @@ public:
     virtual void deselected();
 };
 
-class SensorWidget : public NavigableWidget
+class QuantityWidget : public NavigableWidget
 {
 public:
-    SensorWidget(QUANTITY t);
-    virtual ~SensorWidget();
+    QuantityWidget(QUANTITY t);
+    virtual ~QuantityWidget();
 
     void setValue(int32_t value);
     void update() override;

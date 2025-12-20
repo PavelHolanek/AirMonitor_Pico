@@ -1,5 +1,5 @@
-#ifndef BITMAPS32_H
-#define BITMAPS32_H
+#ifndef BITMAPS_H
+#define BITMAPS_H
 
 #include <stdint.h>
 
@@ -13,5 +13,4 @@ static const uint32_t BITMAP32_SOLID[32] = {
     0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu,
     0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu
 };
-
-#endif // BITMAPS32_H
+#endif // BITMAPS_H

@@ -47,7 +47,7 @@ void NavigableWidget::deselected()
     update();
 }
 
-SensorWidget::SensorWidget(QUANTITY t)
+QuantityWidget::QuantityWidget(QUANTITY t)
     : NavigableWidget(),
       iconBitmap(nullptr),
       units(nullptr),
@@ -74,7 +74,7 @@ SensorWidget::SensorWidget(QUANTITY t)
     }
 }
 
-SensorWidget::~SensorWidget()
+QuantityWidget::~QuantityWidget()
 {
     if (pictogram) { delete pictogram; pictogram = nullptr; }
     if (arrow) { delete arrow; arrow = nullptr; }
@@ -82,18 +82,18 @@ SensorWidget::~SensorWidget()
     if (unitsText) { delete unitsText; unitsText = nullptr; }
 }
 
-void SensorWidget::selected()
+void QuantityWidget::selected()
 {
     area->backgroundColor = PARAM_COLOR_GRAY_1;
     update();
 }
-void SensorWidget::deselected()
+void QuantityWidget::deselected()
 {
     area->backgroundColor = PARAM_COLOR_BLACK;
     update();
 }
 
-void SensorWidget::setValue(int32_t value)
+void QuantityWidget::setValue(int32_t value)
 {
     // Format values based on quantity type. For temperature, input is in centi-degrees C
     // and should be displayed as X,Y (comma as decimal separator) with one decimal,
@@ -134,7 +134,7 @@ void SensorWidget::setValue(int32_t value)
     }
 }
 
-void SensorWidget::update()
+void QuantityWidget::update()
 {
     if (!area) return;
     if (!initialized) initialize();
@@ -165,7 +165,7 @@ void SensorWidget::update()
     GFX_destroyFramebuf();
 }
 
-void SensorWidget::initialize()
+void QuantityWidget::initialize()
 {
     if (!area || initialized) return;
 

@@ -2,7 +2,7 @@
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include <wchar.h>
 #include "Parameters.h"
-#include "Bitmaps32.h"
+#include "Bitmaps.h"
 #include <cstdio>
 
 GraphicElement::GraphicElement() : backgroundColor(PARAM_COLOR_BLACK), color(PARAM_COLOR_BLACK) { posX = 0; posY = 0; }

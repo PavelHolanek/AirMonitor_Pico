@@ -16,10 +16,10 @@ MainWindow::MainWindow()
     GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, MAIN_WINDOW_BACKGROUND);
 
     // create sensor widgets with their QUANTITY types
-    temperatureWidget = new SensorWidget(QUANTITY_TEMPERATURE);
-    humidityWidget    = new SensorWidget(QUANTITY_HUMIDITY);
-    pressureWidget   = new SensorWidget(QUANTITY_PRESSURE);
-    co2Widget         = new SensorWidget(QUANTITY_CO2);
+    temperatureWidget = new QuantityWidget(QUANTITY_TEMPERATURE);
+    humidityWidget    = new QuantityWidget(QUANTITY_HUMIDITY);
+    pressureWidget   = new QuantityWidget(QUANTITY_PRESSURE);
+    co2Widget         = new QuantityWidget(QUANTITY_CO2);
 
     // time and settings are generic navigable widgets
     timeWidget    = new TimeWidget();
@@ -184,7 +184,7 @@ void MainWindow::joystickAction(JoystickState state)
     }
 }
 
-SensorWidget* MainWindow::getWidgetByType(QUANTITY type)
+QuantityWidget* MainWindow::getWidgetByType(QUANTITY type)
 {
     if(QUANTITY_TEMPERATURE == type)
     {

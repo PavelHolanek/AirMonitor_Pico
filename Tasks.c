@@ -4,7 +4,7 @@
 #include "Settings.h"
 #include "Base.h"
 #include "GUIManager.c"
-#include "sensors/sensor_bme280.h"
+#include "sensors/sensor_bmp280.h"
 #include "sensors/sensor_sht40.h"
 #include "sensors/sensor_sdc41.h"
 #include <stdint.h>
@@ -17,7 +17,7 @@ SemaphoreHandle_t i2c1_mutex = NULL;
 SemaphoreHandle_t spi0_mutex = NULL;
 SemaphoreHandle_t spi1_mutex = NULL;
 
-QueueHandle_t BME280DataQueue = NULL;
+QueueHandle_t bmp280DataQueue = NULL;
 QueueHandle_t SHT40DataQueue = NULL;
 QueueHandle_t SDC41DataQueue = NULL;
 
@@ -46,7 +46,7 @@ void intializeSemaphoresAndQueues()
     spi0_mutex = xSemaphoreCreateMutex();
     spi1_mutex = xSemaphoreCreateMutex();
 
-    BME280DataQueue = xQueueCreate(1, sizeof(sensor_bme280_data_t));
+    bmp280DataQueue = xQueueCreate(1, sizeof(sensor_bmp280_data_t));
     SHT40DataQueue = xQueueCreate(1, sizeof(sensor_sht40_data_t));
     SDC41DataQueue = xQueueCreate(1, sizeof(sensor_sdc41_data_t));
 
@@ -80,22 +80,22 @@ void getClockTimeTask(void*) {
     }
 }
 
-void readBME280Task(void*) {
-    sensor_bme280_data_t value;
+void readbmp280Task(void*) {
+    sensor_bmp280_data_t value;
     for(;;)
     {
         xSemaphoreTake(i2c0_mutex, portMAX_DELAY);
-        LOG("TASK: readBME280");
-        if (sensor_bme280_read(&value))
+        LOG("TASK: readbmp280");
+        if (sensor_bmp280_read(&value))
         {
-            if(xQueueSend(BME280DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
+            if(xQueueSend(bmp280DataQueue, ( void * ) &value, TICKS_TO_WAIT) != pdPASS )
             {
-                LOG("Failed to send BME280 data");
+                LOG("Failed to send bmp280 data");
             }
         }
         else
         {
-            LOG("Failed to read data from BME280");
+            LOG("Failed to read data from bmp280");
         }
         
         xSemaphoreGive(i2c0_mutex);
@@ -152,7 +152,7 @@ void readSCD41Task(void*) {
 void dataManagerTask(void*) {
     sensor_sdc41_data_t sdc41value;
     sensor_sht40_data_t sht40value;
-    sensor_bme280_data_t bme280value;
+    sensor_bmp280_data_t bmp280value;
 
     int32_t temperature;
     int32_t humidity;
@@ -163,12 +163,12 @@ void dataManagerTask(void*) {
     { 
         xQueueReceive(SDC41DataQueue, &sdc41value, portMAX_DELAY);
         xQueueReceive(SHT40DataQueue, &sht40value, portMAX_DELAY);
-        xQueueReceive(BME280DataQueue, &bme280value, portMAX_DELAY);
+        xQueueReceive(bmp280DataQueue, &bmp280value, portMAX_DELAY);
         LOG("TASK: dataManager");
         //TODO moving average
-        temperature = bme280value.temperature_c;
+        temperature = bmp280value.temperature_c;
         humidity = sht40value.humidity_rh;
-        preassure = bme280value.pressure_pa;
+        preassure = bmp280value.pressure_pa;
         co2 = sdc41value.co2_ppm;
 
         //TODO field for graph

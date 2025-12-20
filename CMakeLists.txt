@@ -58,7 +58,7 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/Window.h
         GUI/GUIManager.h
         GUI/GUIManager.cpp
-        GUI/Bitmaps32.h
+        GUI/Bitmaps.h
         Base.h
         Clock.c
         Clock.h
@@ -70,8 +70,8 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         sensors/sensor_sdc41.h
         sensors/sensor_sht40.c
         sensors/sensor_sht40.h
-        sensors/sensor_bme280.c
-        sensors/sensor_bme280.h
+        sensors/sensor_bmp280.c
+        sensors/sensor_bmp280.h
 )
 
 pico_set_program_name(AirMonitor_Pico "AirMonitor_Pico")
