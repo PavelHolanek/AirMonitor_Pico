@@ -10,9 +10,10 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "semphr.h"
+#include "event_groups.h"
 
 #define TICKS_TO_WAIT 1000
-#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(200)
+#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(300)
 
 extern SemaphoreHandle_t i2c0_mutex;
 extern SemaphoreHandle_t i2c1_mutex;
@@ -37,6 +38,8 @@ extern SemaphoreHandle_t JoystickMoveInteruptionSemaphore;
 extern SemaphoreHandle_t JoystickPressInteruptionSemaphore;
 extern QueueHandle_t JoystickStateQueue;
 
+extern EventGroupHandle_t JoystickEventGroup;
+
 void intializeSemaphoresAndQueues();
 
 void getClockTimeTask(void*);
@@ -52,7 +55,7 @@ void timeChangedGUITask(void*);
 
 void joystickPressedTask(void*);
 void joystickMovedTask(void*);
-void joystickActionGUITask(void*);
+void joystickEvaluationTask(void*);
 
 void writeLogTask(void*);
 

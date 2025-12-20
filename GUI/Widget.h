@@ -26,6 +26,8 @@ public:
     NavigableWidget* up;
     NavigableWidget* down;
     void buttonPressed();
+    virtual void selected();
+    virtual void deselected();
 };
 
 class SensorWidget : public NavigableWidget
@@ -43,6 +45,8 @@ public:
     const char *units;
     QUANTITY type;
 
+    void selected() override;
+    void deselected() override;
 private:
     bitMap32* pictogram;
     bitMap32* arrow;
@@ -54,7 +58,7 @@ private:
     wchar_t unitsBuffer[12];
 };
 
-class SettingsWidget : public Widget
+class SettingsWidget : public NavigableWidget
 {
 public:
     SettingsWidget();
@@ -66,7 +70,7 @@ public:
 private:
     Text* title;
 };
-class TimeWidget : public Widget
+class TimeWidget : public NavigableWidget
 {
 public:
     TimeWidget();

@@ -173,7 +173,7 @@ int main()
 {
     stdio_init_all();
 
-    sleep_ms(7000);
+    sleep_ms(200);
 
     gpio_init(GPIO_PUSH_PIN);
     gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
@@ -209,9 +209,9 @@ int main()
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
     xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
     xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
-    xTaskCreate(joystickPressedTask,        "joystickEvaluationTask",     1000, NULL, 10, NULL);
+    xTaskCreate(joystickPressedTask,        "joystickPressedTask",        1000, NULL, 10, NULL);
     xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);
-    //xTaskCreate(joystickActionGUITask,      "joystickActionGUITask",      1000, NULL, 1, NULL);
+    xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 9, NULL);
     //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);
     //xTaskCreate(writeValueToStorageTask,    "writeValueToStorageTask",    1000, NULL, 1, NULL);
     vTaskStartScheduler();

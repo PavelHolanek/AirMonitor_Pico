@@ -94,6 +94,7 @@ target_include_directories(AirMonitor_Pico PRIVATE
 # Add any user requested libraries
 target_link_libraries(AirMonitor_Pico 
         hardware_spi
+		hardware_adc
         ili9488
         gfx
 		pico_ds3231

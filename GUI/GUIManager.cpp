@@ -35,4 +35,9 @@ void gui_timeChanged(Time CurerntTime)
     }
 }
 
+void gui_joystick(JoystickState state)
+{
+    currentWindow->joystickAction(state);
+}
+
 }

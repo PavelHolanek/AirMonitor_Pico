@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
+#include "hardware/adc.h"
 
 SemaphoreHandle_t i2c0_mutex = NULL;
 SemaphoreHandle_t i2c1_mutex = NULL;
@@ -33,6 +34,10 @@ QueueHandle_t LogsToStoreQueue = NULL;
 SemaphoreHandle_t JoystickMoveInteruptionSemaphore = NULL;
 SemaphoreHandle_t JoystickPressInteruptionSemaphore = NULL;
 QueueHandle_t JoystickStateQueue = NULL;
+
+EventGroupHandle_t JoystickEventGroup = NULL;
+#define EVENT_FLAG_PRESSED   (1 << 0)
+#define EVENT_FLAG_MOVED     (1 << 1)
 
 void intializeSemaphoresAndQueues()
 {
@@ -58,6 +63,8 @@ void intializeSemaphoresAndQueues()
     JoystickMoveInteruptionSemaphore = xSemaphoreCreateBinary();
     JoystickPressInteruptionSemaphore = xSemaphoreCreateBinary();
     JoystickStateQueue = xQueueCreate(1, sizeof(uint8_t));
+
+    JoystickEventGroup = xEventGroupCreate();
 
     sensorsMeassurementPeriod = 30000;
     timeUpdatePeriod = 30000;
@@ -215,6 +222,7 @@ void joystickPressedTask(void*) {
     { 
         xSemaphoreTake(JoystickPressInteruptionSemaphore, portMAX_DELAY);
         LOG("TASK: joystickPressed");
+        xEventGroupSetBits(JoystickEventGroup, EVENT_FLAG_PRESSED);
         vTaskDelay(JOYSTICK_DEBOUNCING_PERIOD);
         xSemaphoreTake(JoystickPressInteruptionSemaphore, 0);
     }
@@ -225,15 +233,38 @@ void joystickMovedTask(void*) {
     { 
         xSemaphoreTake(JoystickMoveInteruptionSemaphore, portMAX_DELAY);
         LOG("TASK: joystickMoved");
+        xEventGroupSetBits(JoystickEventGroup, EVENT_FLAG_MOVED);
         vTaskDelay(JOYSTICK_DEBOUNCING_PERIOD);
         xSemaphoreTake(JoystickMoveInteruptionSemaphore,0);
     }
 }
 
-void joystickActionGUITask(void*) {
+void joystickEvaluationTask(void*) {
+    adc_init();
+    adc_gpio_init(26);
+    adc_gpio_init(27);
+    struct JoystickState state;
     for(;;)
     { 
-        LOG("TASK: joystickActionGUI");
+        state.horizontal = 0;
+        state.vertical = 0;
+        EventBits_t uxBits = xEventGroupWaitBits(JoystickEventGroup,
+                                                EVENT_FLAG_PRESSED | EVENT_FLAG_MOVED,
+                                                pdTRUE,
+                                                pdFALSE,
+                                                portMAX_DELAY);
+        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
+        LOG("TASK: joystickEvaluation");
+        state.pressed = ((uxBits & EVENT_FLAG_PRESSED) != 0);
+        if ((uxBits & EVENT_FLAG_MOVED) != 0) 
+        {
+            adc_select_input(0);
+            state.horizontal = adc_read() - 2065;
+            adc_select_input(1);
+            state.vertical = adc_read() - 2000;
+        }
+        gui_joystick(state);
+        xSemaphoreGive(spi0_mutex);
     }
 }
 

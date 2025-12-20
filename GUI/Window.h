@@ -10,9 +10,11 @@ class Window
 public:
     Window();
     virtual ~Window();
+
+    virtual void joystickAction(JoystickState state) = 0;
 };
 
-class MainWindow
+class MainWindow : public Window
 {
 public:
     MainWindow();
@@ -29,13 +31,15 @@ public:
     SensorWidget* pressureWidget;
     SensorWidget* co2Widget;
     TimeWidget* timeWidget;
-    Widget* settingWidget;
+    SettingsWidget* settingWidget;
 
     void enterQuantityWindow(QUANTITY);
     void enterSettingWindow();
+
+    void joystickAction(JoystickState state) override;
 };
 
-class SettingWindow
+class SettingWindow : public Window
 {
 public:
     SettingWindow();

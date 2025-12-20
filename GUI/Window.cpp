@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "Parameters.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
+#include "stdio.h"
 
 Window::Window()
 {
@@ -31,7 +32,7 @@ MainWindow::MainWindow()
                                            SENSOR_WIDGET_WIDTH,
                                            SENSOR_WIDGET_HEIGHT);
         // ensure area has background and foreground colors
-        temperatureWidget->area->backgroundColor = PARAM_COLOR_GRAY_1;
+        temperatureWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         temperatureWidget->area->color = COLOR_TEMPERATURE;
     }
 
@@ -90,6 +91,97 @@ MainWindow::MainWindow()
     GFX_drawLine(SENSOR_WIDGET_MARGIN, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - 2 * SENSOR_WIDGET_MARGIN, PARAM_SCREEN_WIDTH - SENSOR_WIDGET_MARGIN, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_HEIGHT - 2 * SENSOR_WIDGET_MARGIN, PARAM_COLOR_WHITE);
 
     GFX_drawLine(PARAM_SCREEN_WIDTH / 2, HEADER_HEIGHT + SENSOR_WIDGET_MARGIN, PARAM_SCREEN_WIDTH / 2, PARAM_SCREEN_HEIGHT - SENSOR_WIDGET_MARGIN, PARAM_COLOR_WHITE);
+
+    // Wire up navigable neighbors for 2 columns x 3 rows grid
+    // Row 1: settings | time
+    if (settingWidget && timeWidget) {
+        settingWidget->right = timeWidget;
+        timeWidget->left = settingWidget;
+
+        // Down from header row to sensor row 2
+        settingWidget->down = temperatureWidget;
+        timeWidget->down = pressureWidget;
+    }
+
+    // Row 2: temperature | pressure
+    if (temperatureWidget && pressureWidget) {
+        temperatureWidget->right = pressureWidget;
+        pressureWidget->left = temperatureWidget;
+
+        // Up links to header row
+        temperatureWidget->up = settingWidget;
+        pressureWidget->up = timeWidget;
+
+        // Down links to row 3
+        temperatureWidget->down = humidityWidget;
+        pressureWidget->down = co2Widget;
+    }
+
+    // Row 3: humidity | co2
+    if (humidityWidget && co2Widget) {
+        humidityWidget->right = co2Widget;
+        co2Widget->left = humidityWidget;
+
+        // Up links to row 2
+        humidityWidget->up = temperatureWidget;
+        co2Widget->up = pressureWidget;
+    }
+
+    // Ensure invalid directions are nullptr (grid boundaries)
+    // Row 1 boundaries
+    if (settingWidget) { settingWidget->left = nullptr; settingWidget->up = nullptr; }
+    if (timeWidget) { timeWidget->right = nullptr; timeWidget->up = nullptr; }
+
+    // Row 2 boundaries
+    if (temperatureWidget) { temperatureWidget->left = nullptr; }
+    if (pressureWidget) { pressureWidget->right = nullptr; }
+
+    // Row 3 boundaries
+    if (humidityWidget) { humidityWidget->left = nullptr; humidityWidget->down = nullptr; }
+    if (co2Widget) { co2Widget->right = nullptr; co2Widget->down = nullptr; }
+}
+
+void MainWindow::joystickAction(JoystickState state)
+{
+    if (state.pressed)
+    {
+        //TODO enter
+        return;
+    }
+    else if (currentWidget)
+    {
+        NavigableWidget* newWidget = nullptr;
+        if (state.vertical > state.horizontal && state.vertical > -state.horizontal) 
+        {
+            newWidget = currentWidget->right;
+        }
+        else if (state.vertical < state.horizontal && state.vertical > -state.horizontal) 
+        {
+            newWidget = currentWidget->up;
+        }
+        else if (state.vertical < state.horizontal && state.vertical < -state.horizontal) 
+        {
+            newWidget = currentWidget->left;
+        }
+        else 
+        {
+            newWidget = currentWidget->down;
+        }
+
+        if (newWidget)
+        {
+            newWidget->selected();
+            currentWidget->deselected();
+            currentWidget = newWidget;
+        }
+        return;
+    }
+    else
+    {
+        currentWidget = timeWidget;
+        currentWidget->selected();
+        return;
+    }
 }
 
 SensorWidget* MainWindow::getWidgetByType(QUANTITY type)
@@ -116,26 +208,4 @@ SensorWidget* MainWindow::getWidgetByType(QUANTITY type)
 MainWindow::~MainWindow()
 {
 
-}
-
-void MainWindow::joystickMoved(uint8_t direction)
-{
-NavigableWidget* newWidget = nullptr;
- switch (direction)
- {
-    case 0:
-        newWidget = currentWidget->left;
-        break;
-    case 1:
-        newWidget = currentWidget->down;
-        break;
-    case 2:
-        newWidget = currentWidget->right;
-        break;
-    case 3:
-        newWidget = currentWidget->up;
-        break;
-    default:
-        break;
- }
 }

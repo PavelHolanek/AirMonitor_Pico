@@ -18,4 +18,11 @@ typedef enum
     QUANTITY_PRESSURE
 } QUANTITY;
 
+struct JoystickState
+{
+    bool pressed;
+    int16_t vertical;
+    int16_t horizontal;
+};
+
 #endif //GRAPHIC_BASE_H

@@ -36,6 +36,17 @@ void NavigableWidget::buttonPressed()
     }
 }
 
+void NavigableWidget::selected()
+{
+    area->backgroundColor = PARAM_COLOR_GRAY_1;
+    update();
+}
+void NavigableWidget::deselected()
+{
+    area->backgroundColor = PARAM_COLOR_BLACK;
+    update();
+}
+
 SensorWidget::SensorWidget(QUANTITY t)
     : NavigableWidget(),
       iconBitmap(nullptr),
@@ -69,6 +80,17 @@ SensorWidget::~SensorWidget()
     if (arrow) { delete arrow; arrow = nullptr; }
     if (valueText) { delete valueText; valueText = nullptr; }
     if (unitsText) { delete unitsText; unitsText = nullptr; }
+}
+
+void SensorWidget::selected()
+{
+    area->backgroundColor = PARAM_COLOR_GRAY_1;
+    update();
+}
+void SensorWidget::deselected()
+{
+    area->backgroundColor = PARAM_COLOR_BLACK;
+    update();
 }
 
 void SensorWidget::setValue(int32_t value)
@@ -178,7 +200,7 @@ void SensorWidget::initialize()
 }
 
 SettingsWidget::SettingsWidget()
-    : Widget(), title(nullptr)
+    : NavigableWidget(), title(nullptr)
 {
 }
 
@@ -232,7 +254,7 @@ void SettingsWidget::update()
 }
 
 TimeWidget::TimeWidget()
-    : Widget(), timeText(nullptr)
+    : NavigableWidget(), timeText(nullptr)
 {
     buffer[0] = L'\0';
     time.month = 0;
