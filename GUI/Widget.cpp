@@ -377,3 +377,16 @@ void Widget::update()
         area->Paint();
     }
 }
+
+void TimeWidget::selected()
+{
+    area->backgroundColor = PARAM_COLOR_GRAY_1;
+    area->color = PARAM_COLOR_BLACK;
+    update();
+}
+void TimeWidget::deselected()
+{
+    area->backgroundColor = PARAM_COLOR_BLACK;
+    area->color = PARAM_COLOR_WHITE;
+    update();
+}

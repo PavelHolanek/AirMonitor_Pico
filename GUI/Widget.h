@@ -79,6 +79,8 @@ public:
     void update() override;
     void setTime(const Time& t);
     Time getTime() const;
+    void selected() override;
+    void deselected() override;
 
 private:
     Text* timeText;

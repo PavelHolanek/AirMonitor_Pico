@@ -28,6 +28,8 @@ QueueHandle_t CO2Queue = NULL;
 
 SemaphoreHandle_t TimeRequestSemaphore = NULL;
 QueueHandle_t CurrentTimeQueue = NULL;
+SemaphoreHandle_t TimeSetRequestSemaphore = NULL;
+QueueHandle_t TimeToSetQueue = NULL;
 
 QueueHandle_t LogsToStoreQueue = NULL;
 
@@ -57,6 +59,8 @@ void intializeSemaphoresAndQueues()
 
     TimeRequestSemaphore  = xSemaphoreCreateBinary();
     CurrentTimeQueue = xQueueCreate(1, sizeof(Time));
+    TimeSetRequestSemaphore  = xSemaphoreCreateBinary();
+    TimeToSetQueue = xQueueCreate(1, sizeof(Time));
 
     LogsToStoreQueue = xQueueCreate(8, sizeof(char*));
 
@@ -74,9 +78,29 @@ void getClockTimeTask(void*) {
     for(;;) 
     {
         xSemaphoreTake(TimeRequestSemaphore, portMAX_DELAY);
+        xSemaphoreTake(i2c1_mutex, portMAX_DELAY);
         printf("CLOCK: getClockTimeTask \n");
         value = getClockTimeImpl();
+        xSemaphoreGive(i2c1_mutex);
         xQueueOverwrite(CurrentTimeQueue, ( void * ) &value);
+    }
+}
+
+void setClockTimeTask(void*) {
+    Time value;
+    for(;;)
+    {
+        xSemaphoreTake(TimeSetRequestSemaphore, portMAX_DELAY);
+        xSemaphoreTake(i2c1_mutex, portMAX_DELAY);
+        printf("CLOCK: setClockTimeTask \n");
+        if (xQueueReceive(TimeToSetQueue, &value, TICKS_TO_WAIT) == pdPASS)
+        {
+            setClockTimeImpl(value);
+        }
+        xSemaphoreGive(i2c1_mutex);
+        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
+        gui_timeChanged(value);
+        xSemaphoreGive(spi0_mutex);
     }
 }
 

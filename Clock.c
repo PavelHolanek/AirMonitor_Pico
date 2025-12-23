@@ -49,18 +49,28 @@ void initClock()
     gpio_pull_up(SDL_PIN_CLOCK);
     i2c_init(ds3231.i2c, 400 * 1000);
 
-    #ifdef SETUP_TIME
+    
+}
+
+void setClockTimeImpl(Time time)
+{
     ds3231_data_t ds3231_data = {
-        .seconds = 00,
-        .minutes = 20,
-        .hours = 20,
-        .day = 2,
-        .date = 9,
-        .month =12,
-        .year = 25,
+        .seconds = time.second,
+        .minutes = time.minute,
+        .hours = time.hour,
+        .day = 0,             // day of week not provided; keep 0
+        .date = time.day,      // day of month
+        .month = time.month,
+        .year = 25,            // TODO: Year not in Time; keep current default
         .century = 1,
         .am_pm = false
     };
     ds3231_configure_time(&ds3231, &ds3231_data);
-    #endif
+}
+
+void setClockTime(Time time)
+{
+    // Enqueue desired time and signal the setting task
+    xQueueOverwrite(TimeToSetQueue, (void*)&time);
+    xSemaphoreGive(TimeSetRequestSemaphore);
 }

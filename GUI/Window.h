@@ -3,8 +3,6 @@
 
 #include "Widget.h"
 
-#define SETTINGS_ROWS_COUNT 5
-
 class Window
 {
 public:
@@ -12,42 +10,14 @@ public:
     virtual ~Window();
 
     virtual void joystickAction(JoystickState state) = 0;
+    virtual void enterWindow() = 0;
+    virtual void leaveWindow(){;}
+
+    // Returns dominant direction bucket based on joystick axes comparison.
+    // Mapping (0..3): 0=right, 1=up, 2=left, 3=down
+    static uint8_t getDominantState(JoystickState state);
 };
 
-class MainWindow : public Window
-{
-public:
-    MainWindow();
-    virtual ~MainWindow();
-
-    void buttonPressed();
-    void joystickMoved(uint8_t direction);
-    QuantityWidget* getWidgetByType(QUANTITY type);
-
-    NavigableWidget* currentWidget;
-
-    QuantityWidget* temperatureWidget;
-    QuantityWidget* humidityWidget;
-    QuantityWidget* pressureWidget;
-    QuantityWidget* co2Widget;
-    TimeWidget* timeWidget;
-    SettingsWidget* settingWidget;
-
-    void enterQuantityWindow(QUANTITY);
-    void enterSettingWindow();
-
-    void joystickAction(JoystickState state) override;
-};
-
-class SettingWindow : public Window
-{
-public:
-    SettingWindow();
-    virtual ~SettingWindow() {}
-
-    void enterMainWindow();
-
-    NavigableWidget settingsRows[SETTINGS_ROWS_COUNT];
-};
+// Derived windows are declared in their own headers now
 
 #endif // WINDOW_H

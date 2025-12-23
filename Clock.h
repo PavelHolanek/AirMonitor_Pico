@@ -26,6 +26,8 @@ Time getClockTime();
 Time getClockTimeImpl();
 
 void initClock();
+void setClockTime(Time time);
+void setClockTimeImpl(Time time);
 
 #ifdef __cplusplus
 }

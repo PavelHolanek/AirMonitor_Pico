@@ -13,7 +13,7 @@ extern "C" {
 #include "event_groups.h"
 
 #define TICKS_TO_WAIT 1000
-#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(300)
+#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(500)
 
 extern SemaphoreHandle_t i2c0_mutex;
 extern SemaphoreHandle_t i2c1_mutex;
@@ -31,6 +31,8 @@ extern QueueHandle_t CO2Queue;
 
 extern SemaphoreHandle_t TimeRequestSemaphore;
 extern QueueHandle_t CurrentTimeQueue;
+extern SemaphoreHandle_t TimeSetRequestSemaphore;
+extern QueueHandle_t TimeToSetQueue;
 
 extern QueueHandle_t LogsToStoreQueue;
 
@@ -43,6 +45,7 @@ extern EventGroupHandle_t JoystickEventGroup;
 void intializeSemaphoresAndQueues();
 
 void getClockTimeTask(void*);
+void setClockTimeTask(void*);
 
 void readbmp280Task(void*); 
 void readSHT40Task(void*);
