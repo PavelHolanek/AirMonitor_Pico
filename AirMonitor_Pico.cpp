@@ -19,60 +19,24 @@
 #include "sensor_bmp280.h"
 #include "Parameters.h"
 
-#ifndef __DISPLAYTEST_H__
-#define __DISPLAYTEST_H__
+#define MOSFET_5V_PIN 17
+#define MOSFET_3V3_PIN 16
 
-#define PICO_BREADBOARD_KIT 1
-
-// Pin definitions for the LCD
-#ifdef PICO_BREADBOARD_KIT
 #define TFT_SCLK        6
 #define TFT_MOSI        7
-#define TFT_MISO        255 // Not required, used for DC...
+#define TFT_MISO        255
 #define TFT_DC          15
 #define TFT_RST         14
 #define TFT_CS          13
-#define TFT_BACKLIGHT   255 // hardwired to 3.3v
-#else
-#define USE_SD_CARD     1
-#define TFT_SCLK        18
-#define TFT_MOSI        19
-#define TFT_MISO        255 // Not required, used for DC...
-#define TFT_DC          16
-#define TFT_RST         21
-#define TFT_CS          17
-#define TFT_BACKLIGHT   255 // hardwired to 3.3v
-#endif
-
+#define TFT_BACKLIGHT   255
 #define TFT_WIDTH       480
 #define TFT_HEIGHT      320
 #define TFT_ROTATION    3
 
-// Pin definitions for the SD card
-#define SD_SCLK         10
-#define SD_MOSI         11
-#define SD_MISO         12
-#define SD_CS           13
-
-#define LINE_HEIGHT 24
-#define DELAY 5
-
-// Colors are in 565 (FFFF) format. To convert from RGB888 to RGB565, use:
-//   ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-
 constexpr Color BACKGROUND = {0x00, 0x00, 0x00};
 constexpr Color FOREGROUND  = {0xCC, 0xCC, 0xCC};
 
-#endif
 
-// SPI Defines
-// We are going to use SPI 0, and allocate it to the following GPIO pins
-// Pins can be changed, see the GPIO function select table in the datasheet for information on GPIO assignments
-#define SPI_PORT spi0
-#define PIN_MISO 16
-#define PIN_CS   17
-#define PIN_SCK  18
-#define PIN_MOSI 19
 
 void printLine(uint16_t x, uint16_t y, const wchar_t *wideStr)
 {
@@ -98,7 +62,6 @@ void printLine(uint16_t x, uint16_t y, const wchar_t *wideStr)
 
 void InitializeDisplay()
 {
-    // Initialize display
     puts("Initializing display...");
     LCD_setPins(TFT_DC, TFT_CS, TFT_RST, TFT_SCLK, TFT_MOSI);
     LCD_initDisplay();
@@ -140,17 +103,6 @@ void initDiacritic()
     addExtraCharacter(L'ý');
 }
 
-static int counter = 0;
-void vTaskIncrementPrint(void *pvParameters)
-{
-    while (1)
-    {
-        counter++;
-        printf("Counter: %d\n", counter);
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }
-}
-
 #define GPIO_PUSH_PIN 3
 #define GPIO_MOVE_PIN 9
 
@@ -181,6 +133,16 @@ int main()
     stdio_init_all();
 
     sleep_ms(200);
+
+    gpio_init(MOSFET_5V_PIN);
+    gpio_set_dir(MOSFET_5V_PIN, GPIO_OUT);
+    gpio_init(MOSFET_3V3_PIN);
+    gpio_set_dir(MOSFET_3V3_PIN, GPIO_OUT);
+    gpio_put(MOSFET_3V3_PIN, 0);
+    gpio_put(MOSFET_5V_PIN, 0);
+    sleep_ms(1000);
+    gpio_put(MOSFET_5V_PIN, 1);
+    gpio_put(MOSFET_3V3_PIN, 1);
 
     printf("Initializing display");
     InitializeDisplay();

@@ -296,7 +296,7 @@ void SettingsWidget::update()
     const uint16_t ax = area->posX;
     const uint16_t ay = area->posY;
     // Keep layout similar to QuantityWidget: top-left with padding
-    icon->posX = ax -2;
+    icon->posX = ax -3;
     icon->posY = ay + SENSOR_WIDGET_PADDING - 10;
 
     // Paint the icon
