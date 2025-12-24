@@ -37,6 +37,8 @@ SemaphoreHandle_t JoystickMoveInteruptionSemaphore = NULL;
 SemaphoreHandle_t JoystickPressInteruptionSemaphore = NULL;
 QueueHandle_t JoystickStateQueue = NULL;
 
+TimerHandle_t idleTimer = NULL;
+
 EventGroupHandle_t JoystickEventGroup = NULL;
 #define EVENT_FLAG_PRESSED   (1 << 0)
 #define EVENT_FLAG_MOVED     (1 << 1)
@@ -72,6 +74,10 @@ void intializeSemaphoresAndQueues()
 
     sensorsMeassurementPeriod = 30000;
     timeUpdatePeriod = 30000;
+
+    idleTime = 10000;
+
+    idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdTRUE, 0, idleTimerCallback);
 }
 void getClockTimeTask(void*) {
     Time value;
@@ -289,6 +295,7 @@ void joystickEvaluationTask(void*) {
         }
         gui_joystick(state);
         xSemaphoreGive(spi0_mutex);
+        xTimerReset(idleTimer, portMAX_DELAY);
     }
 }
 
@@ -304,4 +311,10 @@ void writeValueToStorageTask(void*) {
     { 
         LOG("TASK: writeValueToStorage");
     }
+}
+
+void idleTimerCallback()
+{
+    gui_idleTimePassed();
+    LOG("idleTimerCallback");
 }

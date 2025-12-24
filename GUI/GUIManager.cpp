@@ -51,4 +51,17 @@ void gui_changeWindow(Window* window)
     currentWindow->enterWindow();
 }
 
+void gui_idleTimePassed()
+{
+    if (currentWindow == mainWindow)
+    {
+        if(mainWindow->currentWidget)
+        {
+            mainWindow->currentWidget->deselected();
+            mainWindow->currentWidget->update();
+            mainWindow->currentWidget = nullptr;
+        }   
+    }
+}
+
 }

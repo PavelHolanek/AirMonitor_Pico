@@ -25,9 +25,10 @@ void gui_dataChanged(QUANTITY type, int32_t value);
 void gui_timeChanged(Time CurerntTime);
 
 void gui_joystick(JoystickState state);
-// Switch active window. Pass pointer to a concrete Window instance.
+
 void gui_changeWindow(Window* window);
-//void gui_showErrorMessage(const char* message);
+
+void gui_idleTimePassed();
 }
 
 #endif // GUI_MANAGER_H

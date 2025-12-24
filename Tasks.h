@@ -42,6 +42,8 @@ extern QueueHandle_t JoystickStateQueue;
 
 extern EventGroupHandle_t JoystickEventGroup;
 
+extern TimerHandle_t idleTimer;
+
 void intializeSemaphoresAndQueues();
 
 void getClockTimeTask(void*);
@@ -64,6 +66,7 @@ void writeLogTask(void*);
 
 void writeValueToStorageTask(void*);
 
+void idleTimerCallback();
 #ifdef __cplusplus
 }
 #endif

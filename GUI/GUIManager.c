@@ -13,4 +13,6 @@ extern void gui_timeChanged(Time CurerntTime);
 
 extern void gui_joystick(struct JoystickState state);
 
+extern void gui_idleTimePassed();
+
 //extern void gui_showErrorMessage(const char* message);

@@ -67,7 +67,7 @@ MainWindow::MainWindow()
     }
 
     // set the initial current widget (temperature)
-    currentWidget = static_cast<NavigableWidget*>(temperatureWidget);
+    currentWidget = nullptr;
 
     // initial paint for all widget areas via their update() method
     
