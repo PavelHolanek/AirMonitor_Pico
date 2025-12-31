@@ -51,7 +51,15 @@ add_definitions(-DCOMMIT_SHA="${COMMIT_SHA}")
 
 add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/GraphicElement.cpp
-        GUI/Widget.cpp
+        GUI/Area.cpp
+        GUI/Text.cpp
+        GUI/Line.cpp
+        GUI/BitMap32.cpp
+        GUI/BitMap48.cpp
+        GUI/NavigableWidget.cpp
+        GUI/QuantityWidget.cpp
+        GUI/SettingsWidget.cpp
+        GUI/TimeWidget.cpp
         GUI/Window.cpp
         GUI/MainWindow.cpp
         GUI/SettingWindow.cpp
@@ -59,6 +67,11 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/TimePickerWiget.cpp
         GUI/GraphicElement.h
         GUI/Widget.h
+        GUI/Widget.cpp
+        GUI/NavigableWidget.h
+        GUI/QuantityWidget.h
+        GUI/SettingsWidget.h
+        GUI/TimeWidget.h
         GUI/Window.h
         GUI/MainWindow.h
         GUI/SettingWindow.h

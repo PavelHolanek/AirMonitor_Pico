@@ -2,8 +2,8 @@
 #ifndef TIME_PICKER_WIGET_H
 #define TIME_PICKER_WIGET_H
 
-#include "Widget.h"
-
+#include "NavigableWidget.h"
+#include "Clock.h"
 class TimePickerWiget : public NavigableWidget
 {
 public:

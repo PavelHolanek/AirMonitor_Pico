@@ -160,13 +160,13 @@ int main()
     sleep_ms(250);
 
     printOnTheScreem("Initializing bmp280");
-    //sensor_bmp280_init();
+    sensor_bmp280_init();
 
     printOnTheScreem("Initializing sht40");
-    //sensor_sht40_init();
+    sensor_sht40_init();
     
     printOnTheScreem("Initializing sdc41");
-    //sensor_sdc41_init();
+    sensor_sdc41_init();
 
     printOnTheScreem("Initializing joystick");
     gpio_init(GPIO_PUSH_PIN);
@@ -180,9 +180,9 @@ int main()
     intializeSemaphoresAndQueues();
     xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(setClockTimeTask,           "setClockTimeTask",           1000, NULL, 8, NULL);
-    //xTaskCreate(readbmp280Task,             "readbmp280Task",             1000, NULL, 2, NULL);
-    //xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
-    //xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
+    xTaskCreate(readbmp280Task,             "readbmp280Task",             1000, NULL, 2, NULL);
+    xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
+    xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
     xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
     xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);

@@ -1,8 +1,9 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "Widget.h"
-
+#include "SettingsWidget.h"
+#include "TimeWidget.h"
+#include "QuantityWidget.h"
 class Window
 {
 public:
