@@ -3,6 +3,7 @@
 #include "Log.h"
 #include "Settings.h"
 #include "Base.h"
+#include "dataManager.h"
 #include "GUIManager.c"
 #include "sensors/sensor_bmp280.h"
 #include "sensors/sensor_sht40.h"
@@ -78,6 +79,7 @@ void intializeSemaphoresAndQueues()
     idleTime = 10000;
 
     idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdTRUE, 0, idleTimerCallback);
+    dataManager_init();
 }
 void getClockTimeTask(void*) {
     Time value;
@@ -183,6 +185,8 @@ void dataManagerTask(void*) {
     sensor_sdc41_data_t sdc41value;
     sensor_sht40_data_t sht40value;
     sensor_bmp280_data_t bmp280value;
+    Time timestamp;
+    data_manager_processed_sample_t processed;
 
     int32_t temperature;
     int32_t humidity;
@@ -195,14 +199,19 @@ void dataManagerTask(void*) {
         xQueueReceive(SHT40DataQueue, &sht40value, portMAX_DELAY);
         xQueueReceive(bmp280DataQueue, &bmp280value, portMAX_DELAY);
         LOG("TASK: dataManager");
-        //TODO moving average
-        temperature = bmp280value.temperature_c;
-        humidity = sht40value.humidity_rh;
-        preassure = bmp280value.pressure_pa;
-        co2 = sdc41value.co2_ppm;
+        dataManager_processSample(&bmp280value, &sht40value, &sdc41value, &processed);
+        temperature = processed.temperature_c;
+        humidity = processed.humidity_rh;
+        preassure = processed.pressure_pa;
+        co2 = processed.co2_ppm;
 
         //TODO field for graph
         //TODO value trend
+        timestamp = getClockTime();
+        dataManager_storeSample(timestamp,
+                               &bmp280value,
+                               &sht40value,
+                               &sdc41value);
 
         xQueueSend(TemperatureQueue, (void*) &temperature, TICKS_TO_WAIT);
         xQueueSend(PreassureQueue, (void*) &preassure, TICKS_TO_WAIT);

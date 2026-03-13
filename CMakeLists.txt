@@ -83,6 +83,8 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         Base.h
         Clock.c
         Clock.h
+        dataManager.c
+        dataManager.h
         Tasks.c
         Tasks.h
         Log.c
