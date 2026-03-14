@@ -64,7 +64,9 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/MainWindow.cpp
         GUI/SettingWindow.cpp
         GUI/ClockWindow.cpp
+        GUI/GraphWindow.cpp
         GUI/TimePickerWiget.cpp
+        GUI/GraphWidget.cpp
         GUI/GraphicElement.h
         GUI/Widget.h
         GUI/Widget.cpp
@@ -76,7 +78,10 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/MainWindow.h
         GUI/SettingWindow.h
         GUI/ClockWindow.h
+        GUI/GraphWindow.h
         GUI/TimePickerWiget.h
+        GUI/GraphWidget.h
+        GUI/GraphData.h
         GUI/GUIManager.h
         GUI/GUIManager.cpp
         GUI/Bitmaps.h

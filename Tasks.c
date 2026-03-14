@@ -8,6 +8,7 @@
 #include "sensors/sensor_bmp280.h"
 #include "sensors/sensor_sht40.h"
 #include "sensors/sensor_sdc41.h"
+#include "GraphData.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
@@ -43,6 +44,50 @@ TimerHandle_t idleTimer = NULL;
 EventGroupHandle_t JoystickEventGroup = NULL;
 #define EVENT_FLAG_PRESSED   (1 << 0)
 #define EVENT_FLAG_MOVED     (1 << 1)
+
+static size_t buildGraphSnapshot(gui_graph_sample_t* outSamples,
+                                 size_t outCapacity,
+                                 Time* outFromTime,
+                                 Time* outToTime)
+{
+    const size_t total = dataManager_count();
+    size_t used = (total < outCapacity) ? total : outCapacity;
+    data_manager_entry_t entry;
+
+    if (!outSamples || outCapacity == 0U) {
+        return 0U;
+    }
+
+    if (used == 0U) {
+        if (outFromTime) *outFromTime = (Time){0, 0, 0, 0, 0};
+        if (outToTime) *outToTime = (Time){0, 0, 0, 0, 0};
+        return 0U;
+    }
+
+    for (size_t i = 0; i < used; ++i) {
+        const size_t ageFromLatest = used - 1U - i;
+        if (!dataManager_getByAge(ageFromLatest, &entry)) {
+            used = i;
+            break;
+        }
+
+        outSamples[i].time = entry.time;
+        outSamples[i].temperature_c = entry.bmp280.temperature_c;
+        outSamples[i].humidity_rh = entry.sht40.humidity_rh;
+        outSamples[i].pressure_pa = entry.bmp280.pressure_pa;
+        outSamples[i].co2_ppm = (int32_t)entry.sdc41.co2_ppm;
+    }
+
+    if (used > 0U) {
+        if (outFromTime) *outFromTime = outSamples[0].time;
+        if (outToTime) *outToTime = outSamples[used - 1U].time;
+    } else {
+        if (outFromTime) *outFromTime = (Time){0, 0, 0, 0, 0};
+        if (outToTime) *outToTime = (Time){0, 0, 0, 0, 0};
+    }
+
+    return used;
+}
 
 void intializeSemaphoresAndQueues()
 {
@@ -225,6 +270,10 @@ void valuesChangedGUITask(void*) {
     int32_t humidity;
     int32_t preassure;
     uint16_t co2;
+    static gui_graph_sample_t graphSamples[DATA_MANAGER_BUFFER_CAPACITY];
+    Time fromTime;
+    Time toTime;
+    size_t graphCount;
     for(;;)
     { 
         xQueueReceive(TemperatureQueue, &temperature, portMAX_DELAY);
@@ -239,6 +288,16 @@ void valuesChangedGUITask(void*) {
         gui_dataChanged(QUANTITY_PRESSURE, preassure);
         gui_dataChanged(QUANTITY_HUMIDITY, humidity);
         gui_dataChanged(QUANTITY_CO2, co2);
+
+        graphCount = buildGraphSnapshot(graphSamples,
+                                        DATA_MANAGER_BUFFER_CAPACITY,
+                                        &fromTime,
+                                        &toTime);
+        gui_graphDataChanged(QUANTITY_TEMPERATURE, graphSamples, graphCount, fromTime, toTime);
+        gui_graphDataChanged(QUANTITY_PRESSURE, graphSamples, graphCount, fromTime, toTime);
+        gui_graphDataChanged(QUANTITY_HUMIDITY, graphSamples, graphCount, fromTime, toTime);
+        gui_graphDataChanged(QUANTITY_CO2, graphSamples, graphCount, fromTime, toTime);
+
         xSemaphoreGive(spi0_mutex);
     }
 }

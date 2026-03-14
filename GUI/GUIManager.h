@@ -6,6 +6,8 @@
 #include "MainWindow.h"
 #include "SettingWindow.h"
 #include "ClockWindow.h"
+#include "GraphWindow.h"
+#include "GraphData.h"
 
 // Forward declarations to avoid including heavy headers here
 class MainWindow;
@@ -15,12 +17,18 @@ extern Window* currentWindow;
 extern MainWindow* mainWindow;
 extern SettingWindow* settingsWindow;
 extern ClockWindow* clockWindow;
+extern GraphWindow* graphWindow;
 
 extern "C"
 {
 void gui_init();
 
 void gui_dataChanged(QUANTITY type, int32_t value);
+void gui_graphDataChanged(QUANTITY type,
+                          const gui_graph_sample_t* data,
+                          size_t count,
+                          Time fromTime,
+                          Time toTime);
 
 void gui_timeChanged(Time CurerntTime);
 

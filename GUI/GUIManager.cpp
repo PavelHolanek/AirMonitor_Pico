@@ -2,12 +2,14 @@
 #include "MainWindow.h"
 #include "SettingWindow.h"
 #include "ClockWindow.h"
+#include "GraphWindow.h"
 #include <stdio.h>
 
 Window* currentWindow = nullptr;
 MainWindow* mainWindow = nullptr;
 SettingWindow* settingsWindow = nullptr;
 ClockWindow* clockWindow = nullptr;
+GraphWindow* graphWindow = nullptr;
 
 extern "C" {
 
@@ -21,11 +23,25 @@ void gui_dataChanged(QUANTITY type, int32_t value)
     // else if graph widget
 }
 
+void gui_graphDataChanged(QUANTITY type,
+                          const gui_graph_sample_t* data,
+                          size_t count,
+                          Time fromTime,
+                          Time toTime)
+{
+    if (!graphWindow) {
+        return;
+    }
+
+    graphWindow->setGraphData(type, data, count, fromTime, toTime);
+}
+
 void gui_init()
 {
     printf("gui_init \n");
     mainWindow = new MainWindow{};
     clockWindow = new ClockWindow{};
+    graphWindow = new GraphWindow{};
     currentWindow = mainWindow;
     currentWindow->enterWindow();
 }
