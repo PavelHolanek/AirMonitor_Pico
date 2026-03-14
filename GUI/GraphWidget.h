@@ -5,7 +5,8 @@
 #include "GraphData.h"
 #include "Base.h"
 
-typedef struct {
+typedef struct
+{
     uint16_t x;
     uint16_t y;
     bool valid;

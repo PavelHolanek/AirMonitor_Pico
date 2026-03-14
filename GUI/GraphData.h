@@ -11,7 +11,8 @@ extern "C" {
 
 #define GRAPH_WIDGET_MAX_POINTS 22U
 
-typedef struct {
+typedef struct
+{
     Time time;
     int32_t temperature_c;
     int32_t humidity_rh;

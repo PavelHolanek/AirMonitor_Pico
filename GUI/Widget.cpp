@@ -7,7 +7,8 @@ Widget::Widget()
 
 Widget::~Widget()
 {
-    if (area) {
+    if (area)
+    {
         delete area;
         area = nullptr;
     }
@@ -16,7 +17,8 @@ Widget::~Widget()
 void Widget::update()
 {
     // Default update behaviour: repaint own area if present
-    if (area) {
+    if (area)
+    {
         area->Paint();
     }
 }

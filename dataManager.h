@@ -15,14 +15,16 @@ extern "C" {
 
 #define DATA_MANAGER_BUFFER_CAPACITY 256U
 
-typedef struct {
+typedef struct
+{
     Time time;
     sensor_bmp280_data_t bmp280;
     sensor_sht40_data_t sht40;
     sensor_sdc41_data_t sdc41;
 } data_manager_entry_t;
 
-typedef struct {
+typedef struct
+{
     int32_t temperature_c;
     int32_t humidity_rh;
     int32_t pressure_pa;

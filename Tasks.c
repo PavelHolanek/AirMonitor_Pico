@@ -54,19 +54,23 @@ static size_t buildGraphSnapshot(gui_graph_sample_t* outSamples,
     size_t used = (total < outCapacity) ? total : outCapacity;
     data_manager_entry_t entry;
 
-    if (!outSamples || outCapacity == 0U) {
+    if (!outSamples || outCapacity == 0U)
+    {
         return 0U;
     }
 
-    if (used == 0U) {
+    if (used == 0U)
+    {
         if (outFromTime) *outFromTime = (Time){0, 0, 0, 0, 0};
         if (outToTime) *outToTime = (Time){0, 0, 0, 0, 0};
         return 0U;
     }
 
-    for (size_t i = 0; i < used; ++i) {
+    for (size_t i = 0; i < used; ++i)
+    {
         const size_t ageFromLatest = used - 1U - i;
-        if (!dataManager_getByAge(ageFromLatest, &entry)) {
+        if (!dataManager_getByAge(ageFromLatest, &entry))
+        {
             used = i;
             break;
         }
@@ -78,10 +82,13 @@ static size_t buildGraphSnapshot(gui_graph_sample_t* outSamples,
         outSamples[i].co2_ppm = (int32_t)entry.sdc41.co2_ppm;
     }
 
-    if (used > 0U) {
+    if (used > 0U)
+    {
         if (outFromTime) *outFromTime = outSamples[0].time;
         if (outToTime) *outToTime = outSamples[used - 1U].time;
-    } else {
+    }
+    else
+    {
         if (outFromTime) *outFromTime = (Time){0, 0, 0, 0, 0};
         if (outToTime) *outToTime = (Time){0, 0, 0, 0, 0};
     }
@@ -126,7 +133,8 @@ void intializeSemaphoresAndQueues()
     idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdTRUE, 0, idleTimerCallback);
     dataManager_init();
 }
-void getClockTimeTask(void*) {
+void getClockTimeTask(void*)
+{
     Time value;
     for(;;) 
     {
@@ -139,7 +147,8 @@ void getClockTimeTask(void*) {
     }
 }
 
-void setClockTimeTask(void*) {
+void setClockTimeTask(void*)
+{
     Time value;
     for(;;)
     {
@@ -157,7 +166,8 @@ void setClockTimeTask(void*) {
     }
 }
 
-void readbmp280Task(void*) {
+void readbmp280Task(void*)
+{
     sensor_bmp280_data_t value;
     for(;;)
     {
@@ -180,7 +190,8 @@ void readbmp280Task(void*) {
     }
 }
 
-void readSHT40Task(void*) {
+void readSHT40Task(void*)
+{
     sensor_sht40_data_t value;
     for(;;)
     { 
@@ -203,7 +214,8 @@ void readSHT40Task(void*) {
     }
 }
 
-void readSCD41Task(void*) {
+void readSCD41Task(void*)
+{
     sensor_sdc41_data_t value;
     for(;;)
     { 
@@ -226,7 +238,8 @@ void readSCD41Task(void*) {
     }
 }
 
-void dataManagerTask(void*) {
+void dataManagerTask(void*)
+{
     sensor_sdc41_data_t sdc41value;
     sensor_sht40_data_t sht40value;
     sensor_bmp280_data_t bmp280value;
@@ -250,8 +263,6 @@ void dataManagerTask(void*) {
         preassure = processed.pressure_pa;
         co2 = processed.co2_ppm;
 
-        //TODO field for graph
-        //TODO value trend
         timestamp = getClockTime();
         dataManager_storeSample(timestamp,
                                &bmp280value,
@@ -265,7 +276,8 @@ void dataManagerTask(void*) {
     }
 }
 
-void valuesChangedGUITask(void*) {
+void valuesChangedGUITask(void*)
+{
     int32_t temperature;
     int32_t humidity;
     int32_t preassure;
@@ -302,7 +314,8 @@ void valuesChangedGUITask(void*) {
     }
 }
 
-void timeChangedGUITask(void*) {
+void timeChangedGUITask(void*)
+{
     Time currentTime;
     for(;;)
     {
@@ -315,7 +328,8 @@ void timeChangedGUITask(void*) {
     }
 }
 
-void joystickPressedTask(void*) {
+void joystickPressedTask(void*)
+{
     for(;;)
     { 
         xSemaphoreTake(JoystickPressInteruptionSemaphore, portMAX_DELAY);
@@ -326,7 +340,8 @@ void joystickPressedTask(void*) {
     }
 }
 
-void joystickMovedTask(void*) {
+void joystickMovedTask(void*)
+{
     for(;;)
     { 
         xSemaphoreTake(JoystickMoveInteruptionSemaphore, portMAX_DELAY);
@@ -337,7 +352,8 @@ void joystickMovedTask(void*) {
     }
 }
 
-void joystickEvaluationTask(void*) {
+void joystickEvaluationTask(void*)
+{
     adc_init();
     adc_gpio_init(26);
     adc_gpio_init(27);
@@ -367,14 +383,16 @@ void joystickEvaluationTask(void*) {
     }
 }
 
-void writeLogTask(void*) {
+void writeLogTask(void*)
+{
     for(;;)
     { 
         LOG("TASK: writeLog");
     }
 }
 
-void writeValueToStorageTask(void*) {
+void writeValueToStorageTask(void*)
+{
     for(;;)
     { 
         LOG("TASK: writeValueToStorage");

@@ -11,13 +11,15 @@ GraphWindow::GraphWindow()
       titleText(new Text(L"")),
       titleBuffer{0}
 {
-    if (graphWidget) {
+    if (graphWidget)
+    {
         graphWidget->area = new Area(20, 60, PARAM_SCREEN_WIDTH - 40, PARAM_SCREEN_HEIGHT - 80);
         graphWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         graphWidget->area->color = PARAM_COLOR_WHITE;
     }
 
-    if (titleText) {
+    if (titleText)
+    {
         titleText->textSize = 3;
         titleText->backgroundColor = PARAM_COLOR_BLACK;
         titleText->color = PARAM_COLOR_WHITE;
@@ -26,11 +28,13 @@ GraphWindow::GraphWindow()
 
 GraphWindow::~GraphWindow()
 {
-    if (graphWidget) {
+    if (graphWidget)
+    {
         delete graphWidget;
         graphWidget = nullptr;
     }
-    if (titleText) {
+    if (titleText)
+    {
         delete titleText;
         titleText = nullptr;
     }
@@ -39,7 +43,8 @@ GraphWindow::~GraphWindow()
 void GraphWindow::setQuantity(QUANTITY q)
 {
     quantity = q;
-    if (graphWidget) {
+    if (graphWidget)
+    {
         graphWidget->setQuantity(q);
     }
 }
@@ -57,7 +62,8 @@ void GraphWindow::setGraphData(QUANTITY type,
 {
     if (!graphWidget) return;
 
-    if (type == quantity) {
+    if (type == quantity)
+    {
         graphWidget->setData(data, count);
         graphWidget->setTimeFrame(fromTime, toTime);
     }
@@ -67,7 +73,8 @@ void GraphWindow::updateTitle()
 {
     const wchar_t* quantityName = L"";
 
-    switch (quantity) {
+    switch (quantity)
+    {
         case QUANTITY_TEMPERATURE: quantityName = L"Temperature"; break;
         case QUANTITY_HUMIDITY: quantityName = L"Humidity"; break;
         case QUANTITY_PRESSURE: quantityName = L"Pressure"; break;
@@ -86,18 +93,21 @@ void GraphWindow::enterWindow()
     GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, PARAM_COLOR_BLACK);
 
     updateTitle();
-    if (titleText) {
+    if (titleText)
+    {
         titleText->Paint();
     }
 
-    if (graphWidget) {
+    if (graphWidget)
+    {
         graphWidget->update();
     }
 }
 
 void GraphWindow::joystickAction(JoystickState state)
 {
-    if (state.pressed) {
+    if (state.pressed)
+    {
         gui_changeWindow(mainWindow);
     }
 }

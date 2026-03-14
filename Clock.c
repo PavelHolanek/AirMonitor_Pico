@@ -48,13 +48,12 @@ void initClock()
     gpio_pull_up(SDA_PIN_CLOCK);
     gpio_pull_up(SDL_PIN_CLOCK);
     i2c_init(ds3231.i2c, 400 * 1000);
-
-    
 }
 
 void setClockTimeImpl(Time time)
 {
-    ds3231_data_t ds3231_data = {
+    ds3231_data_t ds3231_data =
+    {
         .seconds = time.second,
         .minutes = time.minute,
         .hours = time.hour,

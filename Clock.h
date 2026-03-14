@@ -14,7 +14,8 @@ extern "C" {
 static ds3231_t ds3231;
 
 // Simple time representation
-typedef struct {
+typedef struct
+{
     uint8_t month;   // 1-12
     uint8_t day;     // 1-31
     uint8_t hour;    // 0-23

@@ -4,7 +4,8 @@
 
 char* logsToSave[LOGS_NUMBER];
 
-void LOG(const char* message) {
+void LOG(const char* message)
+{
     const Time time = getClockTime();  //RTC not implemented yet
     printf("[%02u-%02u %02u:%02u:%02u] %s\n",
            (unsigned)time.month,

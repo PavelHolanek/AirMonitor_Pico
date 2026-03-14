@@ -14,7 +14,8 @@ TimeWidget::TimeWidget()
 
 TimeWidget::~TimeWidget()
 {
-    if (timeText) {
+    if (timeText)
+    {
         delete timeText;
         timeText = nullptr;
     }
@@ -25,7 +26,8 @@ void TimeWidget::setTime(const Time& t)
     time = t;
     // Format as HH:MM
     swprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), L"%02u:%02u", (unsigned)time.hour, (unsigned)time.minute);
-    if (timeText) {
+    if (timeText)
+    {
         timeText->str = buffer;
     }
 }
@@ -39,7 +41,8 @@ void TimeWidget::update()
 {
     if (!area) return;
 
-    if (!timeText) {
+    if (!timeText)
+    {
         timeText = new Text(L"00:00");
         timeText->textSize = 4; // readable default
     }

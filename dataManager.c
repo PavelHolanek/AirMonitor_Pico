@@ -1,7 +1,8 @@
 #include "dataManager.h"
 #include <string.h>
 
-typedef struct {
+typedef struct
+{
     data_manager_entry_t entries[DATA_MANAGER_BUFFER_CAPACITY];
     size_t head;
     size_t count;
@@ -35,26 +36,36 @@ void dataManager_storeSample(
     data_manager_entry_t* slot = &g_dataBuffer.entries[g_dataBuffer.head];
     slot->time = time;
 
-    if (bmp280 != NULL) {
+    if (bmp280 != NULL)
+    {
         slot->bmp280 = *bmp280;
-    } else {
+    }
+    else
+    {
         memset(&slot->bmp280, 0, sizeof(slot->bmp280));
     }
 
-    if (sht40 != NULL) {
+    if (sht40 != NULL)
+    {
         slot->sht40 = *sht40;
-    } else {
+    }
+    else
+    {
         memset(&slot->sht40, 0, sizeof(slot->sht40));
     }
 
-    if (sdc41 != NULL) {
+    if (sdc41 != NULL)
+    {
         slot->sdc41 = *sdc41;
-    } else {
+    }
+    else
+    {
         memset(&slot->sdc41, 0, sizeof(slot->sdc41));
     }
 
     g_dataBuffer.head = (g_dataBuffer.head + 1U) % DATA_MANAGER_BUFFER_CAPACITY;
-    if (g_dataBuffer.count < DATA_MANAGER_BUFFER_CAPACITY) {
+    if (g_dataBuffer.count < DATA_MANAGER_BUFFER_CAPACITY)
+    {
         g_dataBuffer.count++;
     }
 }
@@ -69,14 +80,17 @@ void dataManager_processSample(
 
     memset(&processed, 0, sizeof(processed));
 
-    if (bmp280 != NULL) {
+    if (bmp280 != NULL)
+    {
         processed.temperature_c = bmp280->temperature_c;
         processed.pressure_pa = bmp280->pressure_pa;
     }
-    if (sht40 != NULL) {
+    if (sht40 != NULL)
+    {
         processed.humidity_rh = sht40->humidity_rh;
     }
-    if (sdc41 != NULL) {
+    if (sdc41 != NULL)
+    {
         processed.co2_ppm = sdc41->co2_ppm;
     }
 
@@ -86,11 +100,13 @@ void dataManager_processSample(
     g_co2Buffer[g_processedHead] = processed.co2_ppm;
 
     g_processedHead = (g_processedHead + 1U) % DATA_MANAGER_BUFFER_CAPACITY;
-    if (g_processedCount < DATA_MANAGER_BUFFER_CAPACITY) {
+    if (g_processedCount < DATA_MANAGER_BUFFER_CAPACITY)
+    {
         g_processedCount++;
     }
 
-    if (out_processed != NULL) {
+    if (out_processed != NULL)
+    {
         *out_processed = processed;
     }
 }

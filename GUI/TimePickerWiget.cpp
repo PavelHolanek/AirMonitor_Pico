@@ -13,7 +13,8 @@ TimePickerWiget::TimePickerWiget()
 
 TimePickerWiget::~TimePickerWiget()
 {
-    if (text) {
+    if (text)
+    {
         delete text;
         text = nullptr;
     }
@@ -21,7 +22,8 @@ TimePickerWiget::~TimePickerWiget()
 
 void TimePickerWiget::selected()
 {
-    if (area) {
+    if (area)
+    {
         area->backgroundColor = PARAM_COLOR_GRAY_1;
         area->color = PARAM_COLOR_BLACK;
     }
@@ -30,7 +32,8 @@ void TimePickerWiget::selected()
 
 void TimePickerWiget::deselected()
 {
-    if (area) {
+    if (area)
+    {
         area->backgroundColor = PARAM_COLOR_BLACK;
         area->color = PARAM_COLOR_WHITE;
     }
@@ -41,11 +44,13 @@ void TimePickerWiget::update()
 {
     if (!area) return;
 
-    if (!text) {
+    if (!text)
+    {
         text = new Text(L"00:00");
         text->textSize = 4;
     }
-    if (!hint) {
+    if (!hint)
+    {
         hint = new Text(L"^    ");
         hint->textSize = 4;
     }
@@ -127,12 +132,15 @@ Time TimePickerWiget::getSelectedTime() const
 
 void TimePickerWiget::moveUp()
 {
-    if (hintPos == 0) {
+    if (hintPos == 0)
+    {
         // increment hours 0..23
         unsigned h = (unsigned)selectedTime.hour;
         h = (h + 1) % 24;
         selectedTime.hour = (uint8_t)h;
-    } else {
+    }
+    else
+    {
         // increment minutes 0..59
         unsigned m = (unsigned)selectedTime.minute;
         m = (m + 1) % 60;
@@ -143,13 +151,16 @@ void TimePickerWiget::moveUp()
 
 void TimePickerWiget::moveDown()
 {
-    if (hintPos == 0) {
+    if (hintPos == 0)
+    {
         // decrement hours with wrap underflow
         int h = (int)selectedTime.hour;
         h = (h - 1);
         if (h < 0) h = 23;
         selectedTime.hour = (uint8_t)h;
-    } else {
+    }
+    else
+    {
         int m = (int)selectedTime.minute;
         m = (m - 1);
         if (m < 0) m = 59;

@@ -22,7 +22,8 @@ QuantityWidget::QuantityWidget(QUANTITY t)
     valueText = new Text(L"--");
 
     // Set default units per quantity
-    switch (type) {
+    switch (type)
+    {
         case QUANTITY_TEMPERATURE: units = "C";   break;
         case QUANTITY_HUMIDITY:    units = "%%";  break; // match original behavior
         case QUANTITY_CO2:         units = "ppm"; break;
@@ -52,10 +53,12 @@ void QuantityWidget::deselected()
 
 void QuantityWidget::setValue(int32_t value)
 {
-    if (type == QUANTITY_TEMPERATURE) {
+    if (type == QUANTITY_TEMPERATURE)
+    {
         int32_t v = value;
         wchar_t sign[2] = {0};
-        if (v < 0) {
+        if (v < 0)
+        {
             sign[0] = L'-';
             v = -v;
         }
@@ -67,17 +70,24 @@ void QuantityWidget::setValue(int32_t value)
                  sign,
                  whole,
                  frac1);
-    } else if (type == QUANTITY_PRESSURE) {
+    } 
+    else if (type == QUANTITY_PRESSURE) 
+    {
         long hpa = (long)(value / 100);
         swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", hpa);
-    } else if (type == QUANTITY_HUMIDITY) {
+    }
+    else if (type == QUANTITY_HUMIDITY)
+    {
         long percent = (long)(value / 1000);
         swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", percent);
-    } else {
+    }
+    else
+    {
         swprintf(valueBuffer, sizeof(valueBuffer) / sizeof(valueBuffer[0]), L"%ld", (long)value);
     }
 
-    if (valueText) {
+    if (valueText)
+    {
         valueText->str = valueBuffer;
     }
 }
@@ -123,10 +133,12 @@ void QuantityWidget::initialize()
 
     // Convert units (ASCII) into wide buffer once
     unitsBuffer[0] = L'\0';
-    if (units) {
+    if (units)
+    {
         size_t i = 0;
         size_t maxn = sizeof(unitsBuffer) / sizeof(unitsBuffer[0]) - 1;
-        while (units[i] != '\0' && i < maxn) {
+        while (units[i] != '\0' && i < maxn)
+        {
             unitsBuffer[i] = (wchar_t)units[i];
             ++i;
         }
@@ -135,15 +147,24 @@ void QuantityWidget::initialize()
     unitsText->str = unitsBuffer;
 
     // Assign bitmap data pointers once
-    if (type == QUANTITY_TEMPERATURE) {
+    if (type == QUANTITY_TEMPERATURE)
+    {
         pictogram->data = (uint8_t (*)[288])&BITMAP48_TEMPERATURE;
-    } else if (type == QUANTITY_HUMIDITY) {
+    }
+    else if (type == QUANTITY_HUMIDITY)
+    {
         pictogram->data = (uint8_t (*)[288])&BITMAP48_HUMIDITY;
-    } else if (type == QUANTITY_CO2) {
+    }
+    else if (type == QUANTITY_CO2)
+    {
         pictogram->data = (uint8_t (*)[288])&BITMAP48_CO2;
-    } else if (type == QUANTITY_PRESSURE) {
+    }
+    else if (type == QUANTITY_PRESSURE)
+    {
         pictogram->data = (uint8_t (*)[288])&BITMAP48_PRESSURE;
-    } else {
+    }
+    else
+    {
         pictogram->data = iconBitmap;
     }
 
@@ -177,7 +198,8 @@ void QuantityWidget::initialize()
     unitsText->posY = ay + ah - SENSOR_WIDGET_PADDING - (uint16_t)(8 * unitsText->textSize);
 
     // Add as children once so Area will paint them
-    if (!childrenAdded) {
+    if (!childrenAdded)
+    {
         area->addChildren(pictogram);
         area->addChildren(arrow);
         area->addChildren(valueText);

@@ -129,22 +129,26 @@ void MainWindow::joystickAction(JoystickState state)
 {
     if (state.pressed)
     {
-        if (currentWidget == temperatureWidget) {
+        if (currentWidget == temperatureWidget)
+        {
             graphWindow->setQuantity(QUANTITY_TEMPERATURE);
             gui_changeWindow(graphWindow);
             return;
         }
-        if (currentWidget == humidityWidget) {
+        if (currentWidget == humidityWidget)
+        {
             graphWindow->setQuantity(QUANTITY_HUMIDITY);
             gui_changeWindow(graphWindow);
             return;
         }
-        if (currentWidget == pressureWidget) {
+        if (currentWidget == pressureWidget)
+        {
             graphWindow->setQuantity(QUANTITY_PRESSURE);
             gui_changeWindow(graphWindow);
             return;
         }
-        if (currentWidget == co2Widget) {
+        if (currentWidget == co2Widget) 
+        {
             graphWindow->setQuantity(QUANTITY_CO2);
             gui_changeWindow(graphWindow);
             return;

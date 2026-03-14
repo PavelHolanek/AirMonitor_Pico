@@ -29,7 +29,8 @@ void gui_graphDataChanged(QUANTITY type,
                           Time fromTime,
                           Time toTime)
 {
-    if (!graphWindow) {
+    if (!graphWindow)
+    {
         return;
     }
 

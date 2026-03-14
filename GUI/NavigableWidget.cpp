@@ -12,8 +12,8 @@ NavigableWidget::~NavigableWidget()
 
 void NavigableWidget::buttonPressed()
 {
-    // Default behavior: repaint own area if present
-    if (area) {
+    if (area)
+    {
         area->Paint();
     }
 }

@@ -106,7 +106,8 @@ void initDiacritic()
 #define GPIO_PUSH_PIN 3
 #define GPIO_MOVE_PIN 9
 
-void joystickCallback(uint gpio, uint32_t events) {
+void joystickCallback(uint gpio, uint32_t events)
+{
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     if (GPIO_PUSH_PIN == gpio)
     {
@@ -198,7 +199,7 @@ int main()
     
     vTaskStartScheduler();
 
-    for (;;) {
-    }
+    for (;;)
+    {}
     return 0;
 }

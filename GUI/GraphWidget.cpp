@@ -6,7 +6,8 @@
 namespace
 {
 constexpr uint32_t GRAPH_LOOKBACK_SECONDS = 20U * 60U;
-const gui_graph_sample_t EMPTY_GRAPH_SAMPLE = {
+const gui_graph_sample_t EMPTY_GRAPH_SAMPLE =
+{
     {0, 0, 0, 0, 0},
     0,
     0,
@@ -16,7 +17,8 @@ const gui_graph_sample_t EMPTY_GRAPH_SAMPLE = {
 
 uint32_t timeToTotalSeconds(const Time& t)
 {
-    static const uint16_t daysBeforeMonth[12] = {
+    static const uint16_t daysBeforeMonth[12] =
+    {
         0,   // Jan
         31,  // Feb
         59,  // Mar
@@ -49,7 +51,8 @@ uint32_t timeToTotalSeconds(const Time& t)
 
 int32_t sampleValueForQuantity(const gui_graph_sample_t& sample, QUANTITY quantity)
 {
-    switch (quantity) {
+    switch (quantity)
+    {
         case QUANTITY_TEMPERATURE: return sample.temperature_c;
         case QUANTITY_HUMIDITY: return sample.humidity_rh;
         case QUANTITY_PRESSURE: return sample.pressure_pa;
@@ -67,7 +70,8 @@ GraphWidget::GraphWidget()
       fromTime{0, 0, 0, 0, 0},
       toTime{0, 0, 0, 0, 0}
 {
-    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i) {
+    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i)
+    {
         coordinates[i].x = 0;
         coordinates[i].y = 0;
         coordinates[i].valid = false;
@@ -85,7 +89,8 @@ void GraphWidget::setQuantity(QUANTITY q)
 
 void GraphWidget::setData(const gui_graph_sample_t* newData, size_t count)
 {
-    if (newData == nullptr || count == 0U) {
+    if (newData == nullptr || count == 0U)
+    {
         data = &EMPTY_GRAPH_SAMPLE;
         dataCount = 0U;
         return;
@@ -104,7 +109,8 @@ void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
 {
     if (!outBottom || !outTop) return;
 
-    switch (quantity) {
+    switch (quantity)
+    {
         case QUANTITY_TEMPERATURE:
             *outBottom = -1000;   // -10.0 C
             *outTop = 2000;       // 50.0 C
@@ -130,13 +136,15 @@ void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
 
 void GraphWidget::computeCoordinates()
 {
-    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i) {
+    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i)
+    {
         coordinates[i].x = 0U;
         coordinates[i].y = 0U;
         coordinates[i].valid = false;
     }
 
-    if (!area || dataCount == 0U) {
+    if (!area || dataCount == 0U)
+    {
         return;
     }
 
@@ -146,17 +154,21 @@ void GraphWidget::computeCoordinates()
 
     size_t firstIndex = dataCount;
     size_t lastIndex = dataCount;
-    for (size_t i = 0; i < dataCount; ++i) {
+    for (size_t i = 0; i < dataCount; ++i)
+    {
         const uint32_t sec = timeToTotalSeconds(data[i].time);
-        if (sec >= startSec && sec <= endSec) {
-            if (firstIndex == dataCount) {
+        if (sec >= startSec && sec <= endSec)
+        {
+            if (firstIndex == dataCount)
+            {
                 firstIndex = i;
             }
             lastIndex = i;
         }
     }
 
-    if (firstIndex == dataCount || lastIndex == dataCount || firstIndex > lastIndex) {
+    if (firstIndex == dataCount || lastIndex == dataCount || firstIndex > lastIndex)
+    {
         return;
     }
 
@@ -168,29 +180,35 @@ void GraphWidget::computeCoordinates()
     int32_t bottomValue = 0;
     int32_t topValue = 1;
     getScaleRange(&bottomValue, &topValue);
-    if (topValue <= bottomValue) {
+    if (topValue <= bottomValue)
+    {
         topValue = bottomValue + 1;
     }
     const int32_t valueRange = topValue - bottomValue;
 
     uint32_t minIntervalSec = frameSpanSec / GRAPH_WIDGET_MAX_POINTS;
-    if (minIntervalSec == 0U) {
+    if (minIntervalSec == 0U)
+    {
         minIntervalSec = 1U;
     }
 
     size_t coordIndex = 0U;
     uint32_t lastAcceptedSec = 0U;
     bool hasLastAccepted = false;
-    for (size_t i = firstIndex; i <= lastIndex && coordIndex < GRAPH_WIDGET_MAX_POINTS; ++i) {
+    for (size_t i = firstIndex; i <= lastIndex && coordIndex < GRAPH_WIDGET_MAX_POINTS; ++i)
+    {
         const uint32_t sec = timeToTotalSeconds(data[i].time);
-        if (sec < startSec || sec > endSec) {
+        if (sec < startSec || sec > endSec)
+        {
             continue;
         }
 
-        if (hasLastAccepted && sec < lastAcceptedSec) {
+        if (hasLastAccepted && sec < lastAcceptedSec)
+        {
             continue;
         }
-        if (hasLastAccepted && (sec - lastAcceptedSec) < minIntervalSec) {
+        if (hasLastAccepted && (sec - lastAcceptedSec) < minIntervalSec)
+        {
             continue;
         }
         int32_t value = sampleValueForQuantity(data[i], quantity);
@@ -226,9 +244,11 @@ void GraphWidget::update()
     GFX_drawLine(left, bottom, right, bottom, PARAM_COLOR_WHITE);
 
     GraphCoordinate* prev = nullptr;
-    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i) {
+    for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i)
+    {
         if (!coordinates[i].valid) continue;
-        if (prev) {
+        if (prev)
+        {
             GFX_drawLine(prev->x, prev->y, coordinates[i].x, coordinates[i].y, PARAM_COLOR_GREEN);
         }
         prev = &coordinates[i];

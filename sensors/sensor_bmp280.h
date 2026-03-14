@@ -13,7 +13,8 @@ extern "C" {
 #include <stdint.h>
 
 /* Basic measurement set for bmp280 (T + RH + Pressure) */
-typedef struct {
+typedef struct
+{
     int32_t temperature_c;
     int32_t humidity_rh;
     int32_t pressure_pa;

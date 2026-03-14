@@ -13,7 +13,8 @@ extern "C" {
 #include <stdint.h>
 
 /* Basic measurement set for SHT40 (T + RH) */
-typedef struct {
+typedef struct
+{
     int32_t temperature_c;
     int32_t humidity_rh;
 } sensor_sht40_data_t;

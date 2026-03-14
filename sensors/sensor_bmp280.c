@@ -11,7 +11,8 @@ int32_t raw_temperature = 0;
 int32_t raw_pressure = 0;
 struct bmp280_calib_param params;
 
-bool sensor_bmp280_init(void) {
+bool sensor_bmp280_init(void)
+{
     // useful information for picotool
     bi_decl(bi_2pins_with_func(BMP280_I2C_SDA_PIN, BMP280_I2C_SCL_PIN, GPIO_FUNC_I2C));
     bi_decl(bi_program_description("BMP280 I2C example for the Raspberry Pi Pico"));
@@ -30,7 +31,8 @@ bool sensor_bmp280_init(void) {
     return true; // stub: report initialized
 }
 
-bool sensor_bmp280_read(sensor_bmp280_data_t* out) {
+bool sensor_bmp280_read(sensor_bmp280_data_t* out)
+{
     if (!out) return false;
 
     bmp280_read_raw(&raw_temperature, &raw_pressure);
@@ -43,6 +45,7 @@ bool sensor_bmp280_read(sensor_bmp280_data_t* out) {
     return true; // stub: indicate no real data yet
 }
 
-void sensor_bmp280_deinit(void) {
+void sensor_bmp280_deinit(void)
+{
     // TODO: deinitialize sensor / free resources
 }

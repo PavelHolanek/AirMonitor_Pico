@@ -27,7 +27,8 @@ void SettingsWidget::rightMove()
 
 SettingsWidget::~SettingsWidget()
 {
-    if (icon) {
+    if (icon)
+    {
         delete icon;
         icon = nullptr;
     }
@@ -41,7 +42,8 @@ void SettingsWidget::update()
     area->Paint();
 
     // Create icon lazily and configure it
-    if (!icon) {
+    if (!icon)
+    {
         icon = new bitMap48();
         // default to settings gear bitmap from Bitmaps.h
         icon->data = (uint8_t (*)[288])&BITMAP48_SETTINGS;

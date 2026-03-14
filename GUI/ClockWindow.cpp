@@ -31,7 +31,8 @@ void ClockWindow::joystickAction(JoystickState state)
 {
     // Left/right move the asterisk within the TimePickerWiget when selected
     if (!picker) return;
-    if (state.pressed) {
+    if (state.pressed)
+    {
         // Commit selected time to RTC
         setClockTime(picker->getSelectedTime());
         gui_changeWindow(mainWindow);
