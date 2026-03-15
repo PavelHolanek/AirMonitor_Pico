@@ -319,9 +319,9 @@ void timeChangedGUITask(void*)
     Time currentTime;
     for(;;)
     {
-        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
         LOG("TASK: timeChangedGUI");
         currentTime = getClockTime();
+        xSemaphoreTake(spi0_mutex, portMAX_DELAY);
         gui_timeChanged(currentTime);
         xSemaphoreGive(spi0_mutex);
         vTaskDelay(pdMS_TO_TICKS(timeUpdatePeriod));
@@ -401,6 +401,10 @@ void writeValueToStorageTask(void*)
 
 void idleTimerCallback()
 {
-    gui_idleTimePassed();
+    if (xSemaphoreTake(spi0_mutex, 0) == pdTRUE)
+    {
+        gui_idleTimePassed();
+        xSemaphoreGive(spi0_mutex);
+    }
     LOG("idleTimerCallback");
 }

@@ -53,4 +53,9 @@ constexpr Color COLOR_TEMPERATURE = {0xFF, 0x40, 0x00};
 constexpr Color COLOR_PRESSURE    = {0xC0, 0x00, 0x78};
 constexpr Color COLOR_HUMIDITY    = {0x50, 0x50, 0xF0};
 constexpr Color COLOR_CO2         = {0x64, 0xDC, 0x14};
+
+constexpr Color COLOR_TEMPERATURE_2 = {0x3F, 0x10, 0x00};
+constexpr Color COLOR_PRESSURE_2    = {0x30, 0x00, 0x1E};
+constexpr Color COLOR_HUMIDITY_2    = {0x14, 0x14, 0x3C};
+constexpr Color COLOR_CO2_2         = {0x19, 0x37, 0x05};
 #endif // PARAMETERS_H

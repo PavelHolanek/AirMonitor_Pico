@@ -60,6 +60,46 @@ int32_t sampleValueForQuantity(const gui_graph_sample_t& sample, QUANTITY quanti
         default: return 0;
     }
 }
+
+Color quantityLineColor(QUANTITY quantity)
+{
+    switch (quantity)
+    {
+        case QUANTITY_TEMPERATURE: return COLOR_TEMPERATURE;
+        case QUANTITY_HUMIDITY: return COLOR_HUMIDITY;
+        case QUANTITY_PRESSURE: return COLOR_PRESSURE;
+        case QUANTITY_CO2: return COLOR_CO2;
+        default: return PARAM_COLOR_WHITE;
+    }
+}
+
+Color quantityAreaColor(QUANTITY quantity)
+{
+    switch (quantity)
+    {
+        case QUANTITY_TEMPERATURE: return COLOR_TEMPERATURE_2;
+        case QUANTITY_HUMIDITY: return COLOR_HUMIDITY_2;
+        case QUANTITY_PRESSURE: return COLOR_PRESSURE_2;
+        case QUANTITY_CO2: return COLOR_CO2_2;
+        default: return PARAM_COLOR_GRAY_1;
+    }
+}
+
+void drawLine2Px(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
+{
+    GFX_drawLine(x0, y0, x1, y1, color);
+
+    const int16_t dx = (x1 >= x0) ? (x1 - x0) : (x0 - x1);
+    const int16_t dy = (y1 >= y0) ? (y1 - y0) : (y0 - y1);
+    if (dx >= dy)
+    {
+        GFX_drawLine(x0, y0 + 1, x1, y1 + 1, color);
+    }
+    else
+    {
+        GFX_drawLine(x0 + 1, y0, x1 + 1, y1, color);
+    }
+}
 }
 
 GraphWidget::GraphWidget()
@@ -112,20 +152,20 @@ void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
     switch (quantity)
     {
         case QUANTITY_TEMPERATURE:
-            *outBottom = -1000;   // -10.0 C
-            *outTop = 2000;       // 50.0 C
+            *outBottom = 2000;   // 20.0 C
+            *outTop = 3000;       // 30.0 C
             break;
         case QUANTITY_HUMIDITY:
             *outBottom = 0;       // 0 %
             *outTop = 100000;     // 100 %
             break;
         case QUANTITY_PRESSURE:
-            *outBottom = 90000;   // 900 hPa
-            *outTop = 110000;     // 1100 hPa
+            *outBottom = 92000;   // 920 hPa
+            *outTop = 105000;     // 1050 hPa
             break;
         case QUANTITY_CO2:
-            *outBottom = 300;     // 300 ppm
-            *outTop = 2000;       // 3000 ppm
+            *outBottom = 350;     // 300 ppm
+            *outTop = 1800;       // 3000 ppm
             break;
         default:
             *outBottom = 0;
@@ -239,6 +279,8 @@ void GraphWidget::update()
     const uint16_t right = area->posX + area->sizeX - 10;
     const uint16_t top = area->posY + 10;
     const uint16_t bottom = area->posY + area->sizeY - 10;
+    const Color lineColor = quantityLineColor(quantity);
+    const Color areaColor = quantityAreaColor(quantity);
 
     GFX_drawLine(left, top, left, bottom, PARAM_COLOR_WHITE);
     GFX_drawLine(left, bottom, right, bottom, PARAM_COLOR_WHITE);
@@ -249,7 +291,63 @@ void GraphWidget::update()
         if (!coordinates[i].valid) continue;
         if (prev)
         {
-            GFX_drawLine(prev->x, prev->y, coordinates[i].x, coordinates[i].y, PARAM_COLOR_GREEN);
+            const int16_t x0 = (int16_t)prev->x;
+            const int16_t y0 = (int16_t)prev->y;
+            const int16_t x1 = (int16_t)coordinates[i].x;
+            const int16_t y1 = (int16_t)coordinates[i].y;
+            const int16_t yBase = (bottom > 0U) ? (int16_t)(bottom - 1U) : 0;
+
+            if (x0 == x1)
+            {
+                // Vertical segment: just fill the column down to baseline.
+                const int16_t yTop = (y0 < y1) ? y0 : y1;
+                const int16_t h = (int16_t)(yBase - yTop + 1);
+                if (h > 0)
+                {
+                    GFX_fillRect(x0, yTop, 1, h, areaColor);
+                }
+            }
+            else
+            {
+                int16_t leftX = x0;
+                int16_t leftY = y0;
+                int16_t rightX = x1;
+                int16_t rightY = y1;
+
+                if (leftX > rightX)
+                {
+                    leftX = x1;
+                    leftY = y1;
+                    rightX = x0;
+                    rightY = y0;
+                }
+
+                const int16_t lowY = (leftY > rightY) ? leftY : rightY;
+                const int16_t highY = (leftY < rightY) ? leftY : rightY;
+                const int16_t width = (int16_t)(rightX - leftX + 1);
+                const int16_t rectH = (int16_t)(yBase - lowY + 1);
+
+                // Rectangle part of trapezoid under the segment.
+                if (width > 0 && rectH > 0)
+                {
+                    GFX_fillRect(leftX, lowY, width, rectH, areaColor);
+                }
+
+                // Triangle part for the sloped difference between endpoints.
+                if (highY < lowY)
+                {
+                    if (leftY < rightY)
+                    {
+                        GFX_fillTriangle(leftX, highY, leftX, lowY, rightX, lowY, areaColor);
+                    }
+                    else
+                    {
+                        GFX_fillTriangle(rightX, highY, rightX, lowY, leftX, lowY, areaColor);
+                    }
+                }
+            }
+
+            drawLine2Px(x0, y0, x1, y1, lineColor);
         }
         prev = &coordinates[i];
     }
