@@ -1,6 +1,8 @@
 #ifndef TIME_H
 #define TIME_H
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "ds3231.h"
 
@@ -29,6 +31,13 @@ Time getClockTimeImpl();
 void initClock();
 void setClockTime(Time time);
 void setClockTimeImpl(Time time);
+uint32_t timeToTotalSeconds(Time time);
+int8_t compareTimes(Time lhs, Time rhs);
+bool isValidTime(Time time);
+int32_t diffSeconds(Time lhs, Time rhs);
+Time addSeconds(Time time, int32_t deltaSeconds);
+bool isTimeInRange(Time value, Time start, Time end);
+const char* formatTime(Time time, char* buffer, size_t length);
 
 #ifdef __cplusplus
 }

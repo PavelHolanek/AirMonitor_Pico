@@ -15,40 +15,6 @@ const gui_graph_sample_t EMPTY_GRAPH_SAMPLE =
     0
 };
 
-uint32_t timeToTotalSeconds(const Time& t)
-{
-    static const uint16_t daysBeforeMonth[12] =
-    {
-        0,   // Jan
-        31,  // Feb
-        59,  // Mar
-        90,  // Apr
-        120, // May
-        151, // Jun
-        181, // Jul
-        212, // Aug
-        243, // Sep
-        273, // Oct
-        304, // Nov
-        334  // Dec
-    };
-
-    uint8_t month = t.month;
-    uint8_t day = t.day;
-    uint8_t hour = t.hour;
-    uint8_t minute = t.minute;
-    uint8_t second = t.second;
-
-    if (month < 1U || month > 12U) month = 1U;
-    if (day < 1U || day > 31U) day = 1U;
-    if (hour > 23U) hour = 23U;
-    if (minute > 59U) minute = 59U;
-    if (second > 59U) second = 59U;
-
-    const uint32_t days = (uint32_t)daysBeforeMonth[month - 1U] + (uint32_t)(day - 1U);
-    return (((days * 24U) + (uint32_t)hour) * 60U + (uint32_t)minute) * 60U + (uint32_t)second;
-}
-
 int32_t sampleValueForQuantity(const gui_graph_sample_t& sample, QUANTITY quantity)
 {
     switch (quantity)

@@ -6,6 +6,75 @@
 #include "semphr.h"
 #include <stdio.h>
 
+static const uint16_t daysBeforeMonth[12] =
+{
+    0,   // Jan
+    31,  // Feb
+    59,  // Mar
+    90,  // Apr
+    120, // May
+    151, // Jun
+    181, // Jul
+    212, // Aug
+    243, // Sep
+    273, // Oct
+    304, // Nov
+    334  // Dec
+};
+
+static const uint8_t daysInMonth[12] =
+{
+    31, // Jan
+    28, // Feb
+    31, // Mar
+    30, // Apr
+    31, // May
+    30, // Jun
+    31, // Jul
+    31, // Aug
+    30, // Sep
+    31, // Oct
+    30, // Nov
+    31  // Dec
+};
+
+static const uint32_t secondsInYear = 365U * 24U * 60U * 60U;
+
+static Time totalSecondsToTime(uint32_t totalSeconds)
+{
+    Time out =
+    {
+        .month = 1U,
+        .day = 1U,
+        .hour = 0U,
+        .minute = 0U,
+        .second = 0U
+    };
+
+    uint32_t remainingSeconds = totalSeconds % secondsInYear;
+    uint32_t remainingDays = remainingSeconds / (24U * 60U * 60U);
+    remainingSeconds %= (24U * 60U * 60U);
+
+    uint8_t monthIndex = 0U;
+    while (monthIndex < 12U && remainingDays >= daysInMonth[monthIndex])
+    {
+        remainingDays -= daysInMonth[monthIndex];
+        monthIndex++;
+    }
+
+    if (monthIndex < 12U)
+    {
+        out.month = (uint8_t)(monthIndex + 1U);
+        out.day = (uint8_t)(remainingDays + 1U);
+    }
+
+    out.hour = (uint8_t)(remainingSeconds / 3600U);
+    remainingSeconds %= 3600U;
+    out.minute = (uint8_t)(remainingSeconds / 60U);
+    out.second = (uint8_t)(remainingSeconds % 60U);
+    return out;
+}
+
 Time getClockTime()
 {
     Time value;
@@ -72,4 +141,102 @@ void setClockTime(Time time)
     // Enqueue desired time and signal the setting task
     xQueueOverwrite(TimeToSetQueue, (void*)&time);
     xSemaphoreGive(TimeSetRequestSemaphore);
+}
+
+bool isValidTime(Time time)
+{
+    if (time.month < 1U || time.month > 12U)
+    {
+        return false;
+    }
+    if (time.hour > 23U || time.minute > 59U || time.second > 59U)
+    {
+        return false;
+    }
+
+    const uint8_t maxDay = daysInMonth[time.month - 1U];
+    return (time.day >= 1U && time.day <= maxDay);
+}
+
+uint32_t timeToTotalSeconds(Time t)
+{
+    uint8_t month = t.month;
+    uint8_t day = t.day;
+    uint8_t hour = t.hour;
+    uint8_t minute = t.minute;
+    uint8_t second = t.second;
+
+    if (month < 1U || month > 12U) month = 1U;
+    if (day < 1U || day > 31U) day = 1U;
+    if (hour > 23U) hour = 23U;
+    if (minute > 59U) minute = 59U;
+    if (second > 59U) second = 59U;
+
+    const uint32_t days = (uint32_t)daysBeforeMonth[month - 1U] + (uint32_t)(day - 1U);
+    return (((days * 24U) + (uint32_t)hour) * 60U + (uint32_t)minute) * 60U + (uint32_t)second;
+}
+
+int8_t compareTimes(Time lhs, Time rhs)
+{
+    const uint32_t lhsSeconds = timeToTotalSeconds(lhs);
+    const uint32_t rhsSeconds = timeToTotalSeconds(rhs);
+
+    if (lhsSeconds < rhsSeconds)
+    {
+        return -1;
+    }
+    if (lhsSeconds > rhsSeconds)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int32_t diffSeconds(Time lhs, Time rhs)
+{
+    const uint32_t lhsSeconds = timeToTotalSeconds(lhs);
+    const uint32_t rhsSeconds = timeToTotalSeconds(rhs);
+    return (int32_t)lhsSeconds - (int32_t)rhsSeconds;
+}
+
+Time addSeconds(Time time, int32_t deltaSeconds)
+{
+    const int32_t base = (int32_t)timeToTotalSeconds(time);
+    int32_t total = base + deltaSeconds;
+    total %= (int32_t)secondsInYear;
+    if (total < 0)
+    {
+        total += (int32_t)secondsInYear;
+    }
+    return totalSecondsToTime((uint32_t)total);
+}
+
+bool isTimeInRange(Time value, Time start, Time end)
+{
+    const int8_t startToEnd = compareTimes(start, end);
+    if (startToEnd <= 0)
+    {
+        return compareTimes(value, start) >= 0 && compareTimes(value, end) <= 0;
+    }
+    return compareTimes(value, start) >= 0 || compareTimes(value, end) <= 0;
+}
+
+const char* formatTime(Time time, char* buffer, size_t length)
+{
+    if (buffer == NULL || length == 0U)
+    {
+        return NULL;
+    }
+
+    (void)snprintf(
+        buffer,
+        length,
+        "%02u/%02u %02u:%02u:%02u",
+        (unsigned int)time.month,
+        (unsigned int)time.day,
+        (unsigned int)time.hour,
+        (unsigned int)time.minute,
+        (unsigned int)time.second
+    );
+    return buffer;
 }
