@@ -5,11 +5,10 @@
 #include "Base.h"
 #include "Libraries/pico-displayDrivs/ili9488/ili9488.h" // Color struct definition
 
-/*
-  Parameters.h
-  - Application-wide constants and compile-time parameters.
-  - These are not meant to be changed at runtime by the user.
-*/
+
+
+// Application-wide constants and compile-time parameters.
+// These are not meant to be changed at runtime by the user.
 
 constexpr uint16_t PARAM_SCREEN_WIDTH  = 480;
 constexpr uint16_t PARAM_SCREEN_HEIGHT = 320;

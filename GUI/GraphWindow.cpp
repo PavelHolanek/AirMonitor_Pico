@@ -69,6 +69,12 @@ void GraphWindow::setGraphData(QUANTITY type,
     }
 }
 
+void GraphWindow::updateGraph()
+{
+    graphWidget->update(); 
+}
+
+
 void GraphWindow::updateTitle()
 {
     const wchar_t* quantityName = L"";
@@ -90,7 +96,7 @@ void GraphWindow::updateTitle()
 
 void GraphWindow::enterWindow()
 {
-    GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, PARAM_COLOR_BLACK);
+    GFX_fillScreen(PARAM_COLOR_BLACK);
 
     updateTitle();
     if (titleText)

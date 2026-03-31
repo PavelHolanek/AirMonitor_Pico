@@ -35,6 +35,11 @@ void gui_graphDataChanged(QUANTITY type,
     }
 
     graphWindow->setGraphData(type, data, count, fromTime, toTime);
+
+    if (graphWindow == currentWindow)
+    {
+        graphWindow->updateGraph();
+    }
 }
 
 void gui_init()

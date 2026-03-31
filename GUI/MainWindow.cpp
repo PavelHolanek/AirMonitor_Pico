@@ -211,9 +211,9 @@ QuantityWidget* MainWindow::getWidgetByType(QUANTITY type)
     return nullptr;
 }
 
-void MainWindow::enterWindow()
+void MainWindow::enterWindow() 
 {
-    GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, MAIN_WINDOW_BACKGROUND);
+    GFX_fillScreen(MAIN_WINDOW_BACKGROUND);
 
     GFX_drawLine(SENSOR_WIDGET_MARGIN, HEADER_HEIGHT, PARAM_SCREEN_WIDTH - SENSOR_WIDGET_MARGIN, HEADER_HEIGHT, PARAM_COLOR_WHITE);
 
@@ -225,7 +225,7 @@ void MainWindow::enterWindow()
     if (pressureWidget)    pressureWidget->update();
     if (co2Widget)         co2Widget->update();
     if (timeWidget)        timeWidget->update();
-    if (settingWidget)     settingWidget->update();
+    if (settingWidget)     settingWidget->update(); 
 }
 
 MainWindow::~MainWindow()

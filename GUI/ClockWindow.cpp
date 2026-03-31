@@ -17,8 +17,8 @@ ClockWindow::ClockWindow()
 }
 
 void ClockWindow::enterWindow()
-{
-    GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, PARAM_SCREEN_HEIGHT, PARAM_COLOR_BLACK);
+{ 
+    GFX_fillScreen(PARAM_COLOR_BLACK);
     if (picker) {
         // Initialize the selected time on entry
         Time now = getClockTime();
