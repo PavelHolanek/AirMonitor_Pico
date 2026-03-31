@@ -54,22 +54,7 @@ QUANTITY GraphWindow::getQuantity() const
     return quantity;
 }
 
-void GraphWindow::setGraphData(QUANTITY type,
-                               const gui_graph_sample_t* data,
-                               size_t count,
-                               Time fromTime,
-                               Time toTime)
-{
-    if (!graphWidget) return;
-
-    if (type == quantity)
-    {
-        graphWidget->setData(data, count);
-        graphWidget->setTimeFrame(fromTime, toTime);
-    }
-}
-
-void GraphWindow::updateGraph()
+void GraphWindow::updateData()
 {
     graphWidget->update(); 
 }

@@ -35,6 +35,7 @@ uint32_t timeToTotalSeconds(Time time);
 int8_t compareTimes(Time lhs, Time rhs);
 bool isValidTime(Time time);
 int32_t diffSeconds(Time lhs, Time rhs);
+Time addTime(Time time, int32_t deltaDays, int32_t deltaHours, int32_t deltaMinutes, int32_t deltaSeconds);
 Time addSeconds(Time time, int32_t deltaSeconds);
 bool isTimeInRange(Time value, Time start, Time end);
 const char* formatTime(Time time, char* buffer, size_t length);

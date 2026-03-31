@@ -23,12 +23,7 @@ extern "C"
 {
 void gui_init();
 
-void gui_dataChanged(QUANTITY type, int32_t value);
-void gui_graphDataChanged(QUANTITY type,
-                          const gui_graph_sample_t* data,
-                          size_t count,
-                          Time fromTime,
-                          Time toTime);
+void gui_dataChanged();
 
 void gui_timeChanged(Time CurerntTime);
 

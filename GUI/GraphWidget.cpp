@@ -2,9 +2,12 @@
 #include "Parameters.h"
 #include "GraphicElement.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
+#include "dataManager.h"
 
-namespace
-{
+constexpr uint8_t SCOPES_COUNT = 6;
+constexpr Time TIMES_SCOPES[SCOPES_COUNT] = {{1,1,0,30,0},{1,1,1,0,0},{1,1,2,0,0},{1,1,6,0,0},{1,1,12,0,0},{1,2,0,0,0},};
+constexpr Time TIME_RESOLUTION[SCOPES_COUNT] = {{1,1,0,5,0},{1,1,0,10,0},{1,1,0,20,0},{1,1,1,0,0},{1,1,2,0,0},{1,0,4,0,0},};
+
 constexpr uint32_t GRAPH_LOOKBACK_SECONDS = 20U * 60U;
 const gui_graph_sample_t EMPTY_GRAPH_SAMPLE =
 {
@@ -14,6 +17,23 @@ const gui_graph_sample_t EMPTY_GRAPH_SAMPLE =
     0,
     0
 };
+
+void GraphWidget::setCurrentTime(Time time)
+{
+    currentTime = time;
+    //update
+}
+
+void GraphWidget::moveTimeFrameLeft(Time time)
+{
+    //update
+    useRecentData = false; 
+}
+
+void GraphWidget::moveTimeFrameRight(Time time)
+{
+    //update
+}
 
 int32_t sampleValueForQuantity(const gui_graph_sample_t& sample, QUANTITY quantity)
 {
@@ -66,7 +86,7 @@ void drawLine2Px(int16_t x0, int16_t y0, int16_t x1, int16_t y1, Color color)
         GFX_drawLine(x0 + 1, y0, x1 + 1, y1, color);
     }
 }
-}
+
 
 GraphWidget::GraphWidget()
     : Widget(),
@@ -105,10 +125,32 @@ void GraphWidget::setData(const gui_graph_sample_t* newData, size_t count)
     dataCount = count;
 }
 
-void GraphWidget::setTimeFrame(Time from, Time to)
+void GraphWidget::computeTimeFrame()
 {
-    fromTime = from;
-    toTime = to;
+    if (useRecentData)
+    {
+        Time t = currentTime;
+        t.second = 0;
+        if (TIME_RESOLUTION[scope].minute != 0)
+        {
+            t.minute = 0;
+            while(compareTimes(t,currentTime) == -1)
+            {
+                t.minute = t.minute + TIME_RESOLUTION[scope].minute;
+            }
+        }
+        else if (TIME_RESOLUTION[scope].hour != 0)
+        {
+            t.hour = 0;
+            while(compareTimes(t,currentTime) == -1)
+            {
+                t.minute = t.hour + TIME_RESOLUTION[scope].hour;
+            }
+        }
+        endTime = t;
+        startTime = addTime(t, 0, -TIMES_SCOPES[scope].hour, -TIMES_SCOPES[scope].minute, 0);
+    }
+    // nothing to compute
 }
 
 void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
@@ -142,6 +184,20 @@ void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
 
 void GraphWidget::computeCoordinates()
 {
+    computeTimeFrame();
+
+    int32_t upperBound;
+    int32_t lowerBound;
+    getScaleRange(&lowerBound, &upperBound);
+
+    for(size_t i = 0; i < dataManager_count(); i++)
+    {
+        data_manager_processed_sample_t* data = dataManager_get_data(i);
+        //data->
+        //if ()
+
+    }
+
     for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i)
     {
         coordinates[i].x = 0U;

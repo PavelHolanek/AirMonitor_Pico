@@ -1,136 +1,81 @@
 #include "dataManager.h"
 #include <string.h>
 
-typedef struct
-{
-    data_manager_entry_t entries[DATA_MANAGER_BUFFER_CAPACITY];
-    size_t head;
-    size_t count;
-} data_manager_buffer_t;
+static data_manager_entry_t raw_data[DATA_MANAGER_BUFFER_CAPACITY];
+static data_manager_processed_sample_t processed_data[DATA_MANAGER_BUFFER_CAPACITY];
 
-static data_manager_buffer_t g_dataBuffer;
-static int32_t g_temperatureBuffer[DATA_MANAGER_BUFFER_CAPACITY];
-static int32_t g_humidityBuffer[DATA_MANAGER_BUFFER_CAPACITY];
-static int32_t g_pressureBuffer[DATA_MANAGER_BUFFER_CAPACITY];
-static uint16_t g_co2Buffer[DATA_MANAGER_BUFFER_CAPACITY];
-static size_t g_processedHead;
-static size_t g_processedCount;
+static size_t data_count;
+static size_t data_beginning_index;
 
 void dataManager_init(void)
 {
-    memset(&g_dataBuffer, 0, sizeof(g_dataBuffer));
-    memset(g_temperatureBuffer, 0, sizeof(g_temperatureBuffer));
-    memset(g_humidityBuffer, 0, sizeof(g_humidityBuffer));
-    memset(g_pressureBuffer, 0, sizeof(g_pressureBuffer));
-    memset(g_co2Buffer, 0, sizeof(g_co2Buffer));
-    g_processedHead = 0U;
-    g_processedCount = 0U;
+    memset(raw_data, 0, sizeof(raw_data));
+    memset(processed_data, 0, sizeof(processed_data));
+    data_count = 0;
+    data_beginning_index = 0;
 }
 
-void dataManager_storeSample(
+size_t dataManager_count(void)
+{
+    return data_count;
+}
+
+void dataManager_store_and_process_sample(
     Time time,
     const sensor_bmp280_data_t* bmp280,
     const sensor_sht40_data_t* sht40,
     const sensor_sdc41_data_t* sdc41)
 {
-    data_manager_entry_t* slot = &g_dataBuffer.entries[g_dataBuffer.head];
-    slot->time = time;
-
-    if (bmp280 != NULL)
+    size_t index;
+    if (data_count < DATA_MANAGER_BUFFER_CAPACITY)
     {
-        slot->bmp280 = *bmp280;
+        index = ++data_count - 1;
     }
     else
     {
-        memset(&slot->bmp280, 0, sizeof(slot->bmp280));
+        index = data_beginning_index;
+        data_beginning_index = (data_beginning_index + 1) % DATA_MANAGER_BUFFER_CAPACITY;
     }
 
-    if (sht40 != NULL)
-    {
-        slot->sht40 = *sht40;
-    }
-    else
-    {
-        memset(&slot->sht40, 0, sizeof(slot->sht40));
-    }
+    data_manager_entry_t* raw = &(raw_data[index]);
+    data_manager_processed_sample_t* processed = &(processed_data[index]);
 
-    if (sdc41 != NULL)
-    {
-        slot->sdc41 = *sdc41;
-    }
-    else
-    {
-        memset(&slot->sdc41, 0, sizeof(slot->sdc41));
-    }
+    raw->bmp280 = *bmp280;
+    raw->sht40 = *sht40;
+    raw->sdc41 = *sdc41;
+    raw->time = time;
 
-    g_dataBuffer.head = (g_dataBuffer.head + 1U) % DATA_MANAGER_BUFFER_CAPACITY;
-    if (g_dataBuffer.count < DATA_MANAGER_BUFFER_CAPACITY)
-    {
-        g_dataBuffer.count++;
-    }
+    //better algoriths will be implemented
+    processed->temperature_c = bmp280->temperature_c;
+    processed->pressure_pa = bmp280->pressure_pa;
+    processed->humidity_rh = sht40->humidity_rh;
+    processed->co2_ppm = sdc41->co2_ppm;
+    processed->time = time;
 }
 
-void dataManager_processSample(
-    const sensor_bmp280_data_t* bmp280,
-    const sensor_sht40_data_t* sht40,
-    const sensor_sdc41_data_t* sdc41,
-    data_manager_processed_sample_t* out_processed)
+data_manager_processed_sample_t* dataManager_get_data(size_t index)
 {
-    data_manager_processed_sample_t processed;
-
-    memset(&processed, 0, sizeof(processed));
-
-    if (bmp280 != NULL)
+    if (index >= data_count)
     {
-        processed.temperature_c = bmp280->temperature_c;
-        processed.pressure_pa = bmp280->pressure_pa;
+        return NULL;
     }
-    if (sht40 != NULL)
-    {
-        processed.humidity_rh = sht40->humidity_rh;
-    }
-    if (sdc41 != NULL)
-    {
-        processed.co2_ppm = sdc41->co2_ppm;
-    }
-
-    g_temperatureBuffer[g_processedHead] = processed.temperature_c;
-    g_humidityBuffer[g_processedHead] = processed.humidity_rh;
-    g_pressureBuffer[g_processedHead] = processed.pressure_pa;
-    g_co2Buffer[g_processedHead] = processed.co2_ppm;
-
-    g_processedHead = (g_processedHead + 1U) % DATA_MANAGER_BUFFER_CAPACITY;
-    if (g_processedCount < DATA_MANAGER_BUFFER_CAPACITY)
-    {
-        g_processedCount++;
-    }
-
-    if (out_processed != NULL)
-    {
-        *out_processed = processed;
-    }
+    return &(processed_data[(data_beginning_index + index) % DATA_MANAGER_BUFFER_CAPACITY]);
 }
 
-size_t dataManager_count(void)
+int32_t extract_data_for_quantity(data_manager_processed_sample_t* data, QUANTITY quantity)
 {
-    return g_dataBuffer.count;
-}
-
-bool dataManager_getLatest(data_manager_entry_t* out_entry)
-{
-    return dataManager_getByAge(0U, out_entry);
-}
-
-bool dataManager_getByAge(size_t age_from_latest, data_manager_entry_t* out_entry)
-{
-    size_t idx;
-
-    if (out_entry == NULL || g_dataBuffer.count == 0U || age_from_latest >= g_dataBuffer.count) {
-        return false;
+    switch (quantity)
+    {
+    case QUANTITY_CO2:
+        return data->co2_ppm;
+    case QUANTITY_HUMIDITY:
+        return data->humidity_rh;
+    case QUANTITY_PRESSURE:
+        return data->pressure_pa;
+    case QUANTITY_TEMPERATURE:
+        return data->temperature_c;
+    default:
+        break;
     }
-
-    idx = (g_dataBuffer.head + DATA_MANAGER_BUFFER_CAPACITY - 1U - age_from_latest)
-          % DATA_MANAGER_BUFFER_CAPACITY;
-    *out_entry = g_dataBuffer.entries[idx];
-    return true;
 }
+

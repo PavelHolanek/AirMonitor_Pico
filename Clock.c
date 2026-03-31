@@ -178,17 +178,21 @@ uint32_t timeToTotalSeconds(Time t)
 
 int8_t compareTimes(Time lhs, Time rhs)
 {
-    const uint32_t lhsSeconds = timeToTotalSeconds(lhs);
-    const uint32_t rhsSeconds = timeToTotalSeconds(rhs);
+    if (lhs.month < rhs.month) return -1;
+    if (lhs.month > rhs.month) return 1;
 
-    if (lhsSeconds < rhsSeconds)
-    {
-        return -1;
-    }
-    if (lhsSeconds > rhsSeconds)
-    {
-        return 1;
-    }
+    if (lhs.day < rhs.day) return -1;
+    if (lhs.day > rhs.day) return 1;
+
+    if (lhs.hour < rhs.hour) return -1;
+    if (lhs.hour > rhs.hour) return 1;
+
+    if (lhs.minute < rhs.minute) return -1;
+    if (lhs.minute > rhs.minute) return 1;
+
+    if (lhs.second < rhs.second) return -1;
+    if (lhs.second > rhs.second) return 1;
+
     return 0;
 }
 
@@ -199,16 +203,26 @@ int32_t diffSeconds(Time lhs, Time rhs)
     return (int32_t)lhsSeconds - (int32_t)rhsSeconds;
 }
 
-Time addSeconds(Time time, int32_t deltaSeconds)
+Time addTime(Time time, int32_t deltaDays, int32_t deltaHours, int32_t deltaMinutes, int32_t deltaSeconds)
 {
-    const int32_t base = (int32_t)timeToTotalSeconds(time);
-    int32_t total = base + deltaSeconds;
-    total %= (int32_t)secondsInYear;
+    const int64_t base = (int64_t)timeToTotalSeconds(time);
+    int64_t total = base;
+    total += (int64_t)deltaDays * 24LL * 60LL * 60LL;
+    total += (int64_t)deltaHours * 60LL * 60LL;
+    total += (int64_t)deltaMinutes * 60LL;
+    total += (int64_t)deltaSeconds;
+
+    total %= (int64_t)secondsInYear;
     if (total < 0)
     {
-        total += (int32_t)secondsInYear;
+        total += (int64_t)secondsInYear;
     }
     return totalSecondsToTime((uint32_t)total);
+}
+
+Time addSeconds(Time time, int32_t deltaSeconds)
+{
+    return addTime(time, 0, 0, 0, deltaSeconds);
 }
 
 bool isTimeInRange(Time value, Time start, Time end)

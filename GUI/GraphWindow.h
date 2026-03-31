@@ -13,8 +13,7 @@ public:
 
     void setQuantity(QUANTITY q);
     QUANTITY getQuantity() const;
-    void setGraphData(QUANTITY type, const gui_graph_sample_t* data, size_t count, Time fromTime, Time toTime);
-    void updateGraph();
+    void updateData();
 
     void joystickAction(JoystickState state) override;
     void enterWindow() override;

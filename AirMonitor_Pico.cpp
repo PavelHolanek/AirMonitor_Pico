@@ -185,7 +185,6 @@ int main()
     xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
     xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
-    xTaskCreate(valuesChangedGUITask,       "valuesChangedGUITask",       1000, NULL, 1, NULL);
     xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
     xTaskCreate(joystickPressedTask,        "joystickPressedTask",        1000, NULL, 10, NULL);
     xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);

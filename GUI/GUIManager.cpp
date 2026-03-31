@@ -13,32 +13,15 @@ GraphWindow* graphWindow = nullptr;
 
 extern "C" {
 
-void gui_dataChanged(QUANTITY type, int32_t value)
+void gui_dataChanged()
 {
     if (currentWindow == mainWindow)
     {
-        mainWindow->getWidgetByType(type)->setValue(value);
-        mainWindow->getWidgetByType(type)->update();
+        mainWindow->updateData();
     }
-    // else if graph widget
-}
-
-void gui_graphDataChanged(QUANTITY type,
-                          const gui_graph_sample_t* data,
-                          size_t count,
-                          Time fromTime,
-                          Time toTime)
-{
-    if (!graphWindow)
+    else if (currentWindow == graphWindow)
     {
-        return;
-    }
-
-    graphWindow->setGraphData(type, data, count, fromTime, toTime);
-
-    if (graphWindow == currentWindow)
-    {
-        graphWindow->updateGraph();
+        graphWindow->updateData();
     }
 }
 

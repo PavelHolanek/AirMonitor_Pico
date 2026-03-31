@@ -28,6 +28,7 @@ public:
 
     void joystickAction(JoystickState state) override;
     void enterWindow() override;
+    void updateData();
 };
 
 #endif // MAIN_WINDOW_H

@@ -55,7 +55,6 @@ void readSCD41Task(void*);
 
 void dataManagerTask(void*);
 
-void valuesChangedGUITask(void*);
 void timeChangedGUITask(void*);
 
 void joystickPressedTask(void*);

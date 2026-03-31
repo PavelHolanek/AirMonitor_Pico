@@ -4,6 +4,8 @@
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "stdio.h"
 #include "GUIManager.h"
+#include "dataManager.h"
+
 MainWindow::MainWindow()
 {
     // create sensor widgets with their QUANTITY types
@@ -232,3 +234,19 @@ MainWindow::~MainWindow()
 {
     
 }
+
+void MainWindow::updateData()
+{
+    data_manager_processed_sample_t* currentData = dataManager_get_data(dataManager_count()-1);
+
+    getWidgetByType(QUANTITY_TEMPERATURE)->setValue(currentData->temperature_c);
+    getWidgetByType(QUANTITY_TEMPERATURE)->update();
+    getWidgetByType(QUANTITY_HUMIDITY)->setValue(currentData->humidity_rh);
+    getWidgetByType(QUANTITY_HUMIDITY)->update();
+    getWidgetByType(QUANTITY_PRESSURE)->setValue(currentData->pressure_pa);
+    getWidgetByType(QUANTITY_PRESSURE)->update();
+    getWidgetByType(QUANTITY_CO2)->setValue(currentData->co2_ppm);
+    getWidgetByType(QUANTITY_CO2)->update();
+}
+
+
