@@ -3,6 +3,7 @@
 #include "GraphicElement.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "dataManager.h"
+#include <utility>
 
 constexpr uint8_t SCOPES_COUNT = 6;
 constexpr Time TIMES_SCOPES[SCOPES_COUNT] = {{1,1,0,30,0},{1,1,1,0,0},{1,1,2,0,0},{1,1,6,0,0},{1,1,12,0,0},{1,2,0,0,0},};
@@ -190,14 +191,46 @@ void GraphWidget::computeCoordinates()
     int32_t lowerBound;
     getScaleRange(&lowerBound, &upperBound);
 
+    std::pair<Time, int32_t> acceptedData[dataManager_count()];
+
+    data_manager_processed_sample_t* dataBefore;
+    data_manager_processed_sample_t* dataAfter;
+
+    size_t dataCount = 0;
+
     for(size_t i = 0; i < dataManager_count(); i++)
     {
         data_manager_processed_sample_t* data = dataManager_get_data(i);
-        //data->
-        //if ()
+        Time time = data->time;
+        int32_t value = extract_data_for_quantity(data, quantity);
+
+        if(compareTimes(startTime, time) != -1)
+        {
+            dataBefore = data;
+            continue;
+        }
+        else if(compareTimes(time, endTime) != -1)
+        {
+            dataAfter = data;
+            break;
+        }
+        acceptedData[i] = {time, value};
+        dataCount++;
+        if (value > upperBound)
+        {
+            upperBound = value;
+        }
+        if (value < lowerBound)
+        {
+            lowerBound = value;
+        }
+    }
+    
+    for(size_t i = 0; i < dataCount; i++)
+    {
 
     }
-
+    
     for (size_t i = 0; i < GRAPH_WIDGET_MAX_POINTS; ++i)
     {
         coordinates[i].x = 0U;
