@@ -54,6 +54,14 @@ QUANTITY GraphWindow::getQuantity() const
     return quantity;
 }
 
+void GraphWindow::setCurrentTime(Time time)
+{
+    if (graphWidget)
+    {
+        graphWidget->setCurrentTime(time);
+    }
+}
+
 void GraphWindow::updateData()
 {
     graphWidget->update(); 

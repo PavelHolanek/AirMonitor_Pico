@@ -1,8 +1,35 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-uint16_t sensorsMeassurementPeriod; 
-uint16_t timeUpdatePeriod;
-uint16_t idleTime;
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Runtime-tunable settings in milliseconds. Definitions live in Settings.c,
+// initial values are overwritten in tasks_init(). uint32_t because a uint16_t
+// tops out at 65.5 s and the measurement period is longer than that.
+extern uint32_t sensorsMeassurementPeriod;
+extern uint32_t timeUpdatePeriod;
+extern uint32_t idleTime;
+
+// Selects which algorithm turns the raw (time, value) samples into the fixed
+// grid of graph points. All algorithms take the same input (graph_input_t) and
+// fill the same output (graph_points_t), see GraphData.h.
+typedef enum
+{
+    // Working name: value at every grid time is linearly interpolated between
+    // the two neighbouring samples. Rename once the algorithm settles.
+    GRAPH_ALGORITHM_LINEAR_INTERPOLATION = 0,
+
+    GRAPH_ALGORITHM_COUNT
+} GRAPH_ALGORITHM;
+
+extern GRAPH_ALGORITHM graphAlgorithm;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SETTINGS_H

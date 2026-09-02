@@ -5,13 +5,6 @@
 #include "GraphData.h"
 #include "Base.h"
 
-typedef struct
-{
-    uint16_t x;
-    uint16_t y;
-    bool valid;
-} GraphCoordinate;
-
 class GraphWidget : public Widget
 {
 public:
@@ -19,32 +12,28 @@ public:
     virtual ~GraphWidget();
 
     void setQuantity(QUANTITY q);
-    void setData(const gui_graph_sample_t* data, size_t count);
-    void computeTimeFrame();
+
+    // Pushed in from gui_timeChanged(). Nothing is plotted before the first call.
+    void setCurrentTime(Time time);
+
     void update() override;
 
 private:
-    void computeCoordinates();
+    bool buildInput(graph_input_t* input);
     void getScaleRange(int32_t* outBottom, int32_t* outTop) const;
 
-    void setCurrentTime(Time time);
-    void moveTimeFrameLeft(Time time);
-    void moveTimeFrameRight(Time time);
-
     QUANTITY quantity;
-    const gui_graph_sample_t* data;
-    size_t dataCount;
-    Time fromTime;
-    Time toTime;
-    GraphCoordinate coordinates[GRAPH_WIDGET_MAX_POINTS];
 
-    uint8_t scope = 0; //0...SCOPES_COUNT
-
-    Time currentTime;
-    Time startTime;
-    Time endTime;
-
+    // TODO: scope selection and the scrolled-into-the-past mode (useRecentData
+    // == false, explicit timeTo) are wired up but not reachable from the GUI yet.
+    uint8_t scope = 0U;
     bool useRecentData = true;
+    Time timeTo{1U, 1U, 0U, 0U, 0U};
+
+    Time currentTime{1U, 1U, 0U, 0U, 0U};
+    bool hasCurrentTime = false;
+
+    graph_points_t points;
 };
 
 #endif // GRAPH_WIDGET_H

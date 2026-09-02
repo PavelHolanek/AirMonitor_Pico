@@ -74,7 +74,7 @@ void intializeSemaphoresAndQueues()
 
     JoystickEventGroup = xEventGroupCreate();
 
-    sensorsMeassurementPeriod = 30000;
+    sensorsMeassurementPeriod = 120000;   // 2 min
     timeUpdatePeriod = 30000;
 
     idleTime = 10000;

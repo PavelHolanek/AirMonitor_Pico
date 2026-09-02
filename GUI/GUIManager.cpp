@@ -38,9 +38,15 @@ void gui_init()
 void gui_timeChanged(Time CurerntTime)
 {
     mainWindow->timeWidget->setTime(CurerntTime);
+    graphWindow->setCurrentTime(CurerntTime);
+
     if (currentWindow == mainWindow)
     {
         mainWindow->timeWidget->update();
+    }
+    else if (currentWindow == graphWindow)
+    {
+        graphWindow->updateData();
     }
 }
 

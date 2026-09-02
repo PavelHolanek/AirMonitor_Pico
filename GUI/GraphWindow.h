@@ -13,6 +13,7 @@ public:
 
     void setQuantity(QUANTITY q);
     QUANTITY getQuantity() const;
+    void setCurrentTime(Time time);
     void updateData();
 
     void joystickAction(JoystickState state) override;
