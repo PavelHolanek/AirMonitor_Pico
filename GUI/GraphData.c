@@ -173,6 +173,9 @@ bool graph_computePoints(const graph_input_t* input, GRAPH_ALGORITHM algorithm, 
         case GRAPH_ALGORITHM_LINEAR_INTERPOLATION:
             return graph_computePoints_linearInterpolation(input, out);
 
+        case GRAPH_ALGORITHM_BUCKET_AVERAGE:
+            return graph_computePoints_bucketAverage(input, out);
+
         default:
             return false;
     }

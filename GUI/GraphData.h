@@ -16,7 +16,7 @@ extern "C" {
 // Time frame of the graph
 // -----------------------------------------------------------------------------
 
-// Number of selectable time scopes (30 min ... 1 day).
+// Number of selectable time scopes (1 h 40 min ... 3 d 8 h).
 #define GRAPH_SCOPES_COUNT 6U
 
 // Invariant: every scope divides its span into the same number of resolution
@@ -122,6 +122,7 @@ bool graph_computePoints(const graph_input_t* input, GRAPH_ALGORITHM algorithm, 
 // Concrete implementations. Each one gets a zeroed out and may leave any point
 // invalid. One file per algorithm.
 bool graph_computePoints_linearInterpolation(const graph_input_t* input, graph_points_t* out);
+bool graph_computePoints_bucketAverage(const graph_input_t* input, graph_points_t* out);
 
 #ifdef __cplusplus
 }

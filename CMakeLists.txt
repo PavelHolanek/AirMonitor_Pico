@@ -84,6 +84,7 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/GraphData.h
         GUI/GraphData.c
         GUI/GraphAlgorithm_LinearInterpolation.c
+        GUI/GraphAlgorithm_BucketAverage.c
         GUI/GUIManager.h
         GUI/GUIManager.cpp
         GUI/Bitmaps.h
