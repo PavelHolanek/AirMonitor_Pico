@@ -20,14 +20,14 @@ public:
 
 private:
     bool buildInput(graph_input_t* input);
-    void getScaleRange(int32_t* outBottom, int32_t* outTop) const;
+    bool computeValueRange(int32_t* outBottom, int32_t* outTop) const;
 
     QUANTITY quantity;
 
     // TODO: scope selection and the scrolled-into-the-past mode (useRecentData
     // == false, explicit timeTo) are wired up but not reachable from the GUI yet.
     uint8_t scope = 0U;
-    bool useRecentData = true;
+    bool useRecentData = true;  
     Time timeTo{1U, 1U, 0U, 0U, 0U};
 
     Time currentTime{1U, 1U, 0U, 0U, 0U};

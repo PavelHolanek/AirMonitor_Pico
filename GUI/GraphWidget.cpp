@@ -4,11 +4,22 @@
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "dataManager.h"
 #include "Settings.h"
+#include <stdio.h>
+#include <string.h>
+
 
 
 
 
 constexpr uint16_t GRAPH_MARGIN = 10U;
+
+constexpr uint16_t GRAPH_INTERVAL_WIDTH = 20U;
+
+constexpr uint16_t GRAPH_LABEL_TEXT_SIZE = 1U;
+constexpr uint16_t GRAPH_LABEL_CHAR_WIDTH = 6U * GRAPH_LABEL_TEXT_SIZE;
+constexpr uint16_t GRAPH_LABEL_CHAR_HEIGHT = 8U * GRAPH_LABEL_TEXT_SIZE;
+
+constexpr uint16_t GRAPH_LABEL_GAP = 6U;
 
 // Samples handed over to the algorithm. File scope on purpose: a copy of the
 // whole dataManager buffer does not belong on a task stack.
@@ -42,6 +53,69 @@ size_t collectSamples(QUANTITY quantity)
     }
 
     return count;
+}
+
+int32_t quantityScaleStep(QUANTITY quantity)
+{
+    switch (quantity)
+    {
+        case QUANTITY_TEMPERATURE: return 100;    //  1 degree
+        case QUANTITY_HUMIDITY: return 1000;      //  1 %
+        case QUANTITY_PRESSURE: return 1000;      // 10 hPa
+        case QUANTITY_CO2: return 100;            // 100 ppm
+        default: return 1;
+    }
+}
+
+int32_t floorToStep(int32_t value, int32_t step)
+{
+    int32_t quotient = value / step;
+    if ((value % step != 0) && (value < 0))
+    {
+        quotient--;
+    }
+    return quotient * step;
+}
+
+int32_t ceilToStep(int32_t value, int32_t step)
+{
+    int32_t quotient = value / step;
+    if ((value % step != 0) && (value > 0))
+    {
+        quotient++;
+    }
+    return quotient * step;
+}
+
+int32_t quantityDisplayDivisor(QUANTITY quantity)
+{
+    switch (quantity)
+    {
+        case QUANTITY_TEMPERATURE: return 100;    // 0.01 C -> C
+        case QUANTITY_HUMIDITY: return 1000;      // 0.001 % -> %
+        case QUANTITY_PRESSURE: return 100;       // Pa -> hPa
+        case QUANTITY_CO2: return 1;              // ppm
+        default: return 1;
+    }
+}
+
+void drawAxisLabel(int32_t value, QUANTITY quantity, int16_t axisX, int16_t minX, int16_t y, Color color, Color background)
+{
+    char text[12];
+    snprintf(text, sizeof(text), "%ld", (long)(value / quantityDisplayDivisor(quantity)));
+
+    const int16_t width = (int16_t)(strlen(text) * GRAPH_LABEL_CHAR_WIDTH);
+
+    int16_t x = axisX - (int16_t)GRAPH_LABEL_GAP - width;
+    if (x < minX)
+    {
+        x = minX;
+    }
+
+    GFX_setCursor(x, y - (int16_t)(GRAPH_LABEL_CHAR_HEIGHT / 2U));
+    GFX_setTextColor(color);
+    GFX_setTextBack(background);
+    GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
 }
 
 Color quantityLineColor(QUANTITY quantity)
@@ -167,33 +241,44 @@ void GraphWidget::setCurrentTime(Time time)
     hasCurrentTime = true;
 }
 
-void GraphWidget::getScaleRange(int32_t* outBottom, int32_t* outTop) const
+bool GraphWidget::computeValueRange(int32_t* outBottom, int32_t* outTop) const
 {
-    if (!outBottom || !outTop) return;
+    if (!outBottom || !outTop) return false;
 
-    switch (quantity)
+    bool found = false;
+    int32_t minValue = 0;
+    int32_t maxValue = 0;
+
+    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
     {
-        case QUANTITY_TEMPERATURE:
-            *outBottom = 2000;    // 20.0 C
-            *outTop = 3000;       // 30.0 C
-            break;
-        case QUANTITY_HUMIDITY:
-            *outBottom = 0;       // 0 %
-            *outTop = 100000;     // 100 %
-            break;
-        case QUANTITY_PRESSURE:
-            *outBottom = 92000;   // 920 hPa
-            *outTop = 105000;     // 1050 hPa
-            break;
-        case QUANTITY_CO2:
-            *outBottom = 350;     // 350 ppm
-            *outTop = 1800;       // 1800 ppm
-            break;
-        default:
-            *outBottom = 0;
-            *outTop = 1;
-            break;
+        if (!points.valid[i]) continue;
+
+        if (!found)
+        {
+            minValue = points.values[i];
+            maxValue = points.values[i];
+            found = true;
+            continue;
+        }
+
+        if (points.values[i] < minValue) minValue = points.values[i];
+        if (points.values[i] > maxValue) maxValue = points.values[i];
     }
+
+    if (!found) return false;
+
+    const int32_t step = quantityScaleStep(quantity);
+    int32_t bottomValue = floorToStep(minValue, step);
+    int32_t topValue = ceilToStep(maxValue, step);
+
+    if (topValue <= bottomValue)
+    {
+        topValue = bottomValue + step;
+    }
+
+    *outBottom = bottomValue;
+    *outTop = topValue;
+    return true;
 }
 
 bool GraphWidget::buildInput(graph_input_t* input)
@@ -218,10 +303,12 @@ void GraphWidget::update()
 
     area->Paint();
 
-    const uint16_t left = area->posX + GRAPH_MARGIN;
     const uint16_t right = area->posX + area->sizeX - GRAPH_MARGIN;
     const uint16_t top = area->posY + GRAPH_MARGIN;
     const uint16_t bottom = area->posY + area->sizeY - GRAPH_MARGIN;
+
+    const uint16_t plotWidth = GRAPH_INTERVALS_COUNT * GRAPH_INTERVAL_WIDTH;
+    const uint16_t left = right - plotWidth;
 
     GFX_drawLine(left, top, left, bottom, PARAM_COLOR_WHITE);
     GFX_drawLine(left, bottom, right, bottom, PARAM_COLOR_WHITE);
@@ -236,23 +323,20 @@ void GraphWidget::update()
         return;
     }
 
-    // Fixed range per quantity, widened when the data does not fit into it.
+    // Range follows the data, so it changes with every scope and every update.
     int32_t bottomValue = 0;
     int32_t topValue = 1;
-    getScaleRange(&bottomValue, &topValue);
-    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
+    if (!computeValueRange(&bottomValue, &topValue))
     {
-        if (!points.valid[i]) continue;
-        if (points.values[i] < bottomValue) bottomValue = points.values[i];
-        if (points.values[i] > topValue) topValue = points.values[i];
-    }
-    if (topValue <= bottomValue)
-    {
-        topValue = bottomValue + 1;
+        return;
     }
     const int32_t valueRange = topValue - bottomValue;
 
-    const uint16_t plotWidth = (right > left) ? (uint16_t)(right - left) : 1U;
+    drawAxisLabel(topValue, quantity, (int16_t)left, (int16_t)area->posX, (int16_t)top,
+                  PARAM_COLOR_WHITE, area->backgroundColor);
+    drawAxisLabel(bottomValue, quantity, (int16_t)left, (int16_t)area->posX, (int16_t)bottom,
+                  PARAM_COLOR_WHITE, area->backgroundColor);
+
     const uint16_t plotHeight = (bottom > top) ? (uint16_t)(bottom - top) : 1U;
 
     // Grid points are evenly spaced - that is what the fixed interval count buys us.

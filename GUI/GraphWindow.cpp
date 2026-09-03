@@ -72,16 +72,18 @@ void GraphWindow::updateTitle()
 {
     const wchar_t* quantityName = L"";
 
+    const wchar_t* units = L"";
+
     switch (quantity)
     {
-        case QUANTITY_TEMPERATURE: quantityName = L"Temperature"; break;
-        case QUANTITY_HUMIDITY: quantityName = L"Humidity"; break;
-        case QUANTITY_PRESSURE: quantityName = L"Pressure"; break;
-        case QUANTITY_CO2: quantityName = L"CO2"; break;
-        default: quantityName = L"Quantity"; break;
+        case QUANTITY_TEMPERATURE: quantityName = L"Temperature"; units = L"C"; break;
+        case QUANTITY_HUMIDITY: quantityName = L"Humidity"; units = L"%%"; break;
+        case QUANTITY_PRESSURE: quantityName = L"Pressure"; units = L"hPa"; break;
+        case QUANTITY_CO2: quantityName = L"CO2"; units = L"ppm"; break;
+        default: quantityName = L"Quantity"; units = L"-"; break;
     }
 
-    swprintf(titleBuffer, sizeof(titleBuffer) / sizeof(titleBuffer[0]), L"%ls Graph", quantityName);
+    swprintf(titleBuffer, sizeof(titleBuffer) / sizeof(titleBuffer[0]), L"%ls [%ls]", quantityName, units);
     titleText->str = titleBuffer;
     titleText->posX = 20;
     titleText->posY = 16;
