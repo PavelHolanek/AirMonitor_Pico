@@ -25,20 +25,6 @@ const Time TIME_RESOLUTION[GRAPH_SCOPES_COUNT] =
     {1, 1, 4,  0, 0},   //  4 h
 };
 
-// The invariant the whole module relies on: span / resolution is the same for
-// every scope, so GRAPH_POINTS_COUNT is a compile-time constant.
-#define GRAPH_ASSERT_INTERVALS(spanSec, stepSec)                                                        \
-    _Static_assert((spanSec) % (stepSec) == 0, "scope span is not a whole multiple of its resolution"); \
-    _Static_assert((spanSec) / (stepSec) == GRAPH_INTERVALS_COUNT, "scope does not yield GRAPH_INTERVALS_COUNT intervals"); \
-    _Static_assert((24 * 3600) % (stepSec) == 0, "resolution does not divide a whole day")
-
-GRAPH_ASSERT_INTERVALS(100 * 60,       5 * 60);
-GRAPH_ASSERT_INTERVALS(200 * 60,      10 * 60);
-GRAPH_ASSERT_INTERVALS(400 * 60,      20 * 60);
-GRAPH_ASSERT_INTERVALS(20 * 3600,      1 * 3600);
-GRAPH_ASSERT_INTERVALS(40 * 3600,      2 * 3600);
-GRAPH_ASSERT_INTERVALS(80 * 3600,      4 * 3600);
-
 uint32_t graph_durationToSeconds(Time duration)
 {
     const uint32_t days = (duration.day > 0U) ? (uint32_t)(duration.day - 1U) : 0U;

@@ -5,8 +5,8 @@
 #include "dataManager.h"
 #include "Settings.h"
 
-namespace
-{
+
+
 
 constexpr uint16_t GRAPH_MARGIN = 10U;
 
@@ -144,8 +144,6 @@ void drawSegment(const PixelPoint& from, const PixelPoint& to, int16_t yBase, Co
 
     drawLine2Px(x0, y0, x1, y1, lineColor);
 }
-
-} // namespace
 
 GraphWidget::GraphWidget()
     : Widget(),

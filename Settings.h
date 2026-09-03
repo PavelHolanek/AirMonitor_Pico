@@ -7,16 +7,10 @@
 extern "C" {
 #endif
 
-// Runtime-tunable settings in milliseconds. Definitions live in Settings.c,
-// initial values are overwritten in tasks_init(). uint32_t because a uint16_t
-// tops out at 65.5 s and the measurement period is longer than that.
 extern uint32_t sensorsMeassurementPeriod;
 extern uint32_t timeUpdatePeriod;
 extern uint32_t idleTime;
 
-// Selects which algorithm turns the raw (time, value) samples into the fixed
-// grid of graph points. All algorithms take the same input (graph_input_t) and
-// fill the same output (graph_points_t), see GraphData.h.
 typedef enum
 {
     // Value at every grid time linearly interpolated between the two

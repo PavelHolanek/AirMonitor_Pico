@@ -1,7 +1,6 @@
 #include "dataManager.h"
 #include <string.h>
 
-static data_manager_entry_t raw_data[DATA_MANAGER_BUFFER_CAPACITY];
 static data_manager_processed_sample_t processed_data[DATA_MANAGER_BUFFER_CAPACITY];
 
 static size_t data_count;
@@ -9,7 +8,6 @@ static size_t data_beginning_index;
 
 void dataManager_init(void)
 {
-    memset(raw_data, 0, sizeof(raw_data));
     memset(processed_data, 0, sizeof(processed_data));
     data_count = 0;
     data_beginning_index = 0;
@@ -37,13 +35,7 @@ void dataManager_store_and_process_sample(
         data_beginning_index = (data_beginning_index + 1) % DATA_MANAGER_BUFFER_CAPACITY;
     }
 
-    data_manager_entry_t* raw = &(raw_data[index]);
     data_manager_processed_sample_t* processed = &(processed_data[index]);
-
-    raw->bmp280 = *bmp280;
-    raw->sht40 = *sht40;
-    raw->sdc41 = *sdc41;
-    raw->time = time;
 
     //better algoriths will be implemented
     processed->temperature_c = bmp280->temperature_c;
