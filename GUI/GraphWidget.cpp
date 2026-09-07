@@ -20,6 +20,12 @@ constexpr uint16_t GRAPH_LABEL_CHAR_WIDTH = 6U * GRAPH_LABEL_TEXT_SIZE;
 constexpr uint16_t GRAPH_LABEL_CHAR_HEIGHT = 8U * GRAPH_LABEL_TEXT_SIZE;
 
 constexpr uint16_t GRAPH_LABEL_GAP = 6U;
+constexpr uint16_t GRAPH_TIME_LABEL_GAP = 4U;
+
+// Every 5th grid point gets a label: both edges plus three in between.
+constexpr size_t GRAPH_TIME_LABEL_STEP = 5U;
+static_assert(GRAPH_INTERVALS_COUNT % GRAPH_TIME_LABEL_STEP == 0U,
+              "time labels do not land on grid points");
 
 // Samples handed over to the algorithm. File scope on purpose: a copy of the
 // whole dataManager buffer does not belong on a task stack.
@@ -116,6 +122,60 @@ void drawAxisLabel(int32_t value, QUANTITY quantity, int16_t axisX, int16_t minX
     GFX_setTextColor(color);
     GFX_setTextBack(background);
     GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
+}
+
+// Frames shorter than a day are labelled with hours and minutes, longer ones
+// with the date and the hour - on a 3 d 8 h axis a bare clock time would not
+// say which day it belongs to.
+void formatTimeLabel(const graph_input_t* input, size_t index, char* text, size_t size)
+{
+    const Time time = graph_pointTime(input, index);
+
+    if (graph_durationToSeconds(input->span) >= (24U * 3600U))
+    {
+        snprintf(text, size, "%u.%u. %uh",
+                 (unsigned)time.day, (unsigned)time.month, (unsigned)time.hour);
+    }
+    else
+    {
+        snprintf(text, size, "%02u:%02u", (unsigned)time.hour, (unsigned)time.minute);
+    }
+}
+
+// The row of time labels under the horizontal axis.
+void drawTimeLabels(const graph_input_t* input, int16_t left, int16_t right, int16_t y,
+                    Color color, Color background)
+{
+    GFX_setTextColor(color);
+    GFX_setTextBack(background);
+
+    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; i += GRAPH_TIME_LABEL_STEP)
+    {
+        char text[16];
+        formatTimeLabel(input, i, text, sizeof(text));
+
+        const int16_t width = (int16_t)(strlen(text) * GRAPH_LABEL_CHAR_WIDTH);
+        int16_t x;
+
+        // The two edge labels are aligned to their edge rather than centred on
+        // the grid point, so they stay inside the plot: the first one would
+        // otherwise reach into the value labels on the left.
+        if (i == 0U)
+        {
+            x = left;
+        }
+        else if (i == GRAPH_INTERVALS_COUNT)
+        {
+            x = (int16_t)(right - width);
+        }
+        else
+        {
+            x = (int16_t)(left + (int16_t)(i * GRAPH_INTERVAL_WIDTH) - (width / 2));
+        }
+
+        GFX_setCursor(x, y);
+        GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
+    }
 }
 
 Color quantityLineColor(QUANTITY quantity)
@@ -305,7 +365,11 @@ void GraphWidget::update()
 
     const uint16_t right = area->posX + area->sizeX - GRAPH_MARGIN;
     const uint16_t top = area->posY + GRAPH_MARGIN;
-    const uint16_t bottom = area->posY + area->sizeY - GRAPH_MARGIN;
+
+    // The axis is lifted by a whole text row: the time labels live between it
+    // and the bottom margin.
+    const uint16_t bottom = area->posY + area->sizeY - GRAPH_MARGIN
+                            - GRAPH_TIME_LABEL_GAP - GRAPH_LABEL_CHAR_HEIGHT;
 
     const uint16_t plotWidth = GRAPH_INTERVALS_COUNT * GRAPH_INTERVAL_WIDTH;
     const uint16_t left = right - plotWidth;
@@ -318,6 +382,13 @@ void GraphWidget::update()
     {
         return;
     }
+
+    // Independent of the data, so the time frame shows even when there is
+    // nothing to plot in it yet.
+    drawTimeLabels(&input, (int16_t)left, (int16_t)right,
+                   (int16_t)(bottom + GRAPH_TIME_LABEL_GAP),
+                   PARAM_COLOR_WHITE, area->backgroundColor);
+
     if (!graph_computePoints(&input, graphAlgorithm, &points))
     {
         return;
