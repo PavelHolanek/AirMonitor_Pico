@@ -16,8 +16,7 @@ extern "C" {
 #define GRAPH_SCOPES_COUNT 6U
 
 // Invariant: every scope divides its span into the same number of resolution
-// steps, so the number of computed points never depends on the scope. Checked
-// by _Static_assert in GraphData.c.
+// steps, so the number of computed points never depends on the scope.
 // 20 intervals = 21 points, which is exactly 21 px per interval on the current
 // 420 px wide plot.
 #define GRAPH_INTERVALS_COUNT 20U
@@ -69,6 +68,12 @@ int32_t graph_diffSeconds(Time later, Time earlier);
 bool graph_isInFrame(const graph_input_t* input, Time time);
 
 Time graph_roundUpToResolution(Time time, Time resolution);
+
+Time graph_latestTimeTo(uint8_t scope, Time currentTime);
+
+Time graph_earliestTimeTo(uint8_t scope, Time oldestSample);
+
+Time graph_shiftTimeTo(uint8_t scope, Time timeTo, int32_t intervals);
 
 // Absolute time of the index-th grid point, index in [0, GRAPH_POINTS_COUNT).
 Time graph_pointTime(const graph_input_t* input, size_t index);

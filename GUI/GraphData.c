@@ -15,6 +15,7 @@ const Time TIMES_SCOPES[GRAPH_SCOPES_COUNT] =
     {1, 4,  8,  0, 0},  //  3 d  8 h    (20 x  4 h)
 };
 
+// CAREFUL when changing these: every resolution must divide the next one
 const Time TIME_RESOLUTION[GRAPH_SCOPES_COUNT] =
 {
     {1, 1, 0,  5, 0},   //  5 min
@@ -84,6 +85,38 @@ Time graph_roundUpToResolution(Time time, Time resolution)
     return addSeconds(midnight, (int32_t)rounded);
 }
 
+Time graph_latestTimeTo(uint8_t scope, Time currentTime)
+{
+    if (scope >= GRAPH_SCOPES_COUNT)
+    {
+        return currentTime;
+    }
+
+    return graph_roundUpToResolution(currentTime, TIME_RESOLUTION[scope]);
+}
+
+Time graph_earliestTimeTo(uint8_t scope, Time oldestSample)
+{
+    if (scope >= GRAPH_SCOPES_COUNT)
+    {
+        return oldestSample;
+    }
+
+    const Time end = addSeconds(oldestSample, (int32_t)graph_durationToSeconds(TIMES_SCOPES[scope]));
+    return graph_roundUpToResolution(end, TIME_RESOLUTION[scope]);
+}
+
+Time graph_shiftTimeTo(uint8_t scope, Time timeTo, int32_t intervals)
+{
+    if (scope >= GRAPH_SCOPES_COUNT)
+    {
+        return timeTo;
+    }
+
+    const int32_t step = (int32_t)graph_durationToSeconds(TIME_RESOLUTION[scope]);
+    return addSeconds(timeTo, intervals * step);
+}
+
 Time graph_pointTime(const graph_input_t* input, size_t index)
 {
     if (input == NULL)
@@ -132,7 +165,7 @@ bool graph_makeRecentInput(
         return false;
     }
 
-    const Time timeTo = graph_roundUpToResolution(currentTime, TIME_RESOLUTION[scope]);
+    const Time timeTo = graph_latestTimeTo(scope, currentTime);
     return graph_makeInputEndingAt(scope, currentTime, timeTo, samples, sampleCount, out);
 }
 

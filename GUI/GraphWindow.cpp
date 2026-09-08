@@ -64,7 +64,10 @@ void GraphWindow::setCurrentTime(Time time)
 
 void GraphWindow::updateData()
 {
-    graphWidget->update(); 
+    if (graphWidget && graphWidget->followsCurrentTime())
+    {
+        graphWidget->update();
+    }
 }
 
 
@@ -76,11 +79,11 @@ void GraphWindow::updateTitle()
 
     switch (quantity)
     {
-        case QUANTITY_TEMPERATURE: quantityName = L"Temperature"; units = L"C"; break;
-        case QUANTITY_HUMIDITY: quantityName = L"Humidity"; units = L"%%"; break;
-        case QUANTITY_PRESSURE: quantityName = L"Pressure"; units = L"hPa"; break;
+        case QUANTITY_TEMPERATURE: quantityName = L"Teplota"; units = L"C"; break;
+        case QUANTITY_HUMIDITY: quantityName = L"Vlhkost"; units = L"%%"; break;
+        case QUANTITY_PRESSURE: quantityName = L"Tlak"; units = L"hPa"; break;
         case QUANTITY_CO2: quantityName = L"CO2"; units = L"ppm"; break;
-        default: quantityName = L"Quantity"; units = L"-"; break;
+        default: quantityName = L"Veličina"; units = L"-"; break;
     }
 
     swprintf(titleBuffer, sizeof(titleBuffer) / sizeof(titleBuffer[0]), L"%ls [%ls]", quantityName, units);
@@ -101,6 +104,7 @@ void GraphWindow::enterWindow()
 
     if (graphWidget)
     {
+        graphWidget->resetView();
         graphWidget->update();
     }
 }
@@ -110,5 +114,27 @@ void GraphWindow::joystickAction(JoystickState state)
     if (state.pressed)
     {
         gui_changeWindow(mainWindow);
+        return;
+    }
+
+    if (!graphWidget)
+    {
+        return;
+    }
+
+    switch (getDominantState(state))
+    {
+        case 0: // right
+            graphWidget->scrollBy(GRAPH_SCROLL_INTERVALS);
+            break;
+        case 1: // up
+            graphWidget->changeScope(1);
+            break;
+        case 2: // left
+            graphWidget->scrollBy(-GRAPH_SCROLL_INTERVALS);
+            break;
+        default: // 3: down
+            graphWidget->changeScope(-1);
+            break;
     }
 }

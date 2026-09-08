@@ -19,8 +19,9 @@ constexpr uint16_t GRAPH_LABEL_TEXT_SIZE = 1U;
 constexpr uint16_t GRAPH_LABEL_CHAR_WIDTH = 6U * GRAPH_LABEL_TEXT_SIZE;
 constexpr uint16_t GRAPH_LABEL_CHAR_HEIGHT = 8U * GRAPH_LABEL_TEXT_SIZE;
 
-constexpr uint16_t GRAPH_LABEL_GAP = 6U;
+constexpr uint16_t GRAPH_LABEL_GAP = 5U;
 constexpr uint16_t GRAPH_TIME_LABEL_GAP = 4U;
+constexpr uint16_t GRAPH_TIME_LABEL_LINE_STEP = GRAPH_LABEL_CHAR_HEIGHT + 1U;
 
 // Every 5th grid point gets a label: both edges plus three in between.
 constexpr size_t GRAPH_TIME_LABEL_STEP = 5U;
@@ -124,57 +125,44 @@ void drawAxisLabel(int32_t value, QUANTITY quantity, int16_t axisX, int16_t minX
     GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
 }
 
-// Frames shorter than a day are labelled with hours and minutes, longer ones
-// with the date and the hour - on a 3 d 8 h axis a bare clock time would not
-// say which day it belongs to.
-void formatTimeLabel(const graph_input_t* input, size_t index, char* text, size_t size)
+int16_t timeLabelX(const char* text, size_t index, int16_t left, int16_t right)
 {
-    const Time time = graph_pointTime(input, index);
+    const int16_t width = (int16_t)(strlen(text) * GRAPH_LABEL_CHAR_WIDTH);
 
-    if (graph_durationToSeconds(input->span) >= (24U * 3600U))
+    if (index == 0U)
     {
-        snprintf(text, size, "%u.%u. %uh",
-                 (unsigned)time.day, (unsigned)time.month, (unsigned)time.hour);
+        return left;
     }
-    else
+    if (index == GRAPH_INTERVALS_COUNT)
     {
-        snprintf(text, size, "%02u:%02u", (unsigned)time.hour, (unsigned)time.minute);
+        return (int16_t)(right - width);
     }
+    return (int16_t)(left + (int16_t)(index * GRAPH_INTERVAL_WIDTH) - (width / 2));
 }
 
-// The row of time labels under the horizontal axis.
 void drawTimeLabels(const graph_input_t* input, int16_t left, int16_t right, int16_t y,
                     Color color, Color background)
 {
+    const bool withDate = graph_durationToSeconds(input->span) >= (24U * 3600U);
+
     GFX_setTextColor(color);
     GFX_setTextBack(background);
 
     for (size_t i = 0U; i < GRAPH_POINTS_COUNT; i += GRAPH_TIME_LABEL_STEP)
     {
-        char text[16];
-        formatTimeLabel(input, i, text, sizeof(text));
+        const Time time = graph_pointTime(input, i);
+        char text[12];
 
-        const int16_t width = (int16_t)(strlen(text) * GRAPH_LABEL_CHAR_WIDTH);
-        int16_t x;
-
-        // The two edge labels are aligned to their edge rather than centred on
-        // the grid point, so they stay inside the plot: the first one would
-        // otherwise reach into the value labels on the left.
-        if (i == 0U)
-        {
-            x = left;
-        }
-        else if (i == GRAPH_INTERVALS_COUNT)
-        {
-            x = (int16_t)(right - width);
-        }
-        else
-        {
-            x = (int16_t)(left + (int16_t)(i * GRAPH_INTERVAL_WIDTH) - (width / 2));
-        }
-
-        GFX_setCursor(x, y);
+        snprintf(text, sizeof(text), "%02u:%02u", (unsigned)time.hour, (unsigned)time.minute);
+        GFX_setCursor(timeLabelX(text, i, left, right), y);
         GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
+
+        if (withDate)
+        {
+            snprintf(text, sizeof(text), "%u.%u.", (unsigned)time.day, (unsigned)time.month);
+            GFX_setCursor(timeLabelX(text, i, left, right), (int16_t)(y + GRAPH_TIME_LABEL_LINE_STEP));
+            GFX_printf(GRAPH_LABEL_TEXT_SIZE, "%s", text);
+        }
     }
 }
 
@@ -301,6 +289,130 @@ void GraphWidget::setCurrentTime(Time time)
     hasCurrentTime = true;
 }
 
+void GraphWidget::resetView()
+{
+    useRecentData = true;
+}
+
+Time GraphWidget::effectiveTimeTo() const
+{
+    return useRecentData ? graph_latestTimeTo(scope, currentTime) : timeTo;
+}
+
+bool GraphWidget::oldestSampleTime(Time* out) const
+{
+    if (out == nullptr)
+    {
+        return false;
+    }
+
+    data_manager_processed_sample_t* oldest = dataManager_get_data(0U);
+    if (oldest == nullptr)
+    {
+        return false;
+    }
+
+    *out = oldest->time;
+    return true;
+}
+
+bool GraphWidget::applyTimeTo(Time desired)
+{
+    const Time latest = graph_latestTimeTo(scope, currentTime);
+    const Time previous = effectiveTimeTo();
+
+    Time wanted = desired;
+    bool recent = false;
+
+    if (graph_diffSeconds(wanted, latest) >= 0)
+    {
+        // Reached the present, or a zoom out swallowed it.
+        wanted = latest;
+        recent = true;
+    }
+    else
+    {
+        Time oldest;
+        if (!oldestSampleTime(&oldest))
+        {
+            wanted = latest;
+            recent = true;
+        }
+        else
+        {
+            const Time earliest = graph_earliestTimeTo(scope, oldest);
+            if (graph_diffSeconds(earliest, latest) >= 0)
+            {
+                // Less than one frame of data - it all fits in the newest frame already, so there is nowhere to scroll.
+                wanted = latest;
+                recent = true;
+            }
+            else if (graph_diffSeconds(wanted, earliest) < 0)
+            {
+                wanted = earliest;
+            }
+        }
+    }
+
+    const bool changed = (recent != useRecentData) || (graph_diffSeconds(wanted, previous) != 0);
+
+    useRecentData = recent;
+    timeTo = wanted;
+    return changed;
+}
+
+void GraphWidget::scrollBy(int32_t intervals)
+{
+    if (!hasCurrentTime)
+    {
+        return;
+    }
+
+    if (applyTimeTo(graph_shiftTimeTo(scope, effectiveTimeTo(), intervals)))
+    {
+        update();
+    }
+}
+
+void GraphWidget::changeScope(int8_t delta)
+{
+    if (!hasCurrentTime)
+    {
+        return;
+    }
+
+    int32_t next = (int32_t)scope + (int32_t)delta;
+    if (next < 0)
+    {
+        next = 0;
+    }
+    if (next >= (int32_t)GRAPH_SCOPES_COUNT)
+    {
+        next = (int32_t)GRAPH_SCOPES_COUNT - 1;
+    }
+    if ((uint8_t)next == scope)
+    {
+        return;
+    }
+
+    const Time previousTimeTo = effectiveTimeTo();
+    const bool wasRecent = useRecentData;
+
+    scope = (uint8_t)next;
+
+    // Keep the right edge where it was, rounded up to the new resolution. In
+    // the recent mode it comes from the current time instead, so that zooming
+    // never drifts away from the present.
+    const Time desired = wasRecent
+        ? graph_latestTimeTo(scope, currentTime)
+        : graph_roundUpToResolution(previousTimeTo, TIME_RESOLUTION[scope]);
+
+    applyTimeTo(desired);
+
+    // The span changed, so the picture changes even when the right edge did not.
+    update();
+}
+
 bool GraphWidget::computeValueRange(int32_t* outBottom, int32_t* outTop) const
 {
     if (!outBottom || !outTop) return false;
@@ -374,8 +486,10 @@ void GraphWidget::update()
     const uint16_t plotWidth = GRAPH_INTERVALS_COUNT * GRAPH_INTERVAL_WIDTH;
     const uint16_t left = right - plotWidth;
 
-    GFX_drawLine(left, top, left, bottom, PARAM_COLOR_WHITE);
-    GFX_drawLine(left, bottom, right, bottom, PARAM_COLOR_WHITE);
+    const uint16_t axisX = left - 1U;
+
+    GFX_drawLine(axisX, top, axisX, bottom, PARAM_COLOR_WHITE);
+    GFX_drawLine(axisX, bottom, right, bottom, PARAM_COLOR_WHITE);
 
     graph_input_t input;
     if (!buildInput(&input))
@@ -403,9 +517,9 @@ void GraphWidget::update()
     }
     const int32_t valueRange = topValue - bottomValue;
 
-    drawAxisLabel(topValue, quantity, (int16_t)left, (int16_t)area->posX, (int16_t)top,
+    drawAxisLabel(topValue, quantity, (int16_t)axisX, (int16_t)area->posX, (int16_t)top,
                   PARAM_COLOR_WHITE, area->backgroundColor);
-    drawAxisLabel(bottomValue, quantity, (int16_t)left, (int16_t)area->posX, (int16_t)bottom,
+    drawAxisLabel(bottomValue, quantity, (int16_t)axisX, (int16_t)area->posX, (int16_t)bottom,
                   PARAM_COLOR_WHITE, area->backgroundColor);
 
     const uint16_t plotHeight = (bottom > top) ? (uint16_t)(bottom - top) : 1U;
