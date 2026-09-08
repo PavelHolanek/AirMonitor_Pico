@@ -258,9 +258,6 @@ void joystickMovedTask(void*)
 
 void joystickEvaluationTask(void*)
 {
-    adc_init();
-    adc_gpio_init(26);
-    adc_gpio_init(27);
     struct JoystickState state;
     for(;;)
     { 
@@ -277,9 +274,9 @@ void joystickEvaluationTask(void*)
         if ((uxBits & EVENT_FLAG_MOVED) != 0) 
         {
             adc_select_input(0);
-            state.horizontal = adc_read() - 2065;
+            state.horizontal = adc_read() - joystickCalibration0;
             adc_select_input(1);
-            state.vertical = adc_read() - 2000;
+            state.vertical = adc_read() - joystickCalibration1;
         }
         gui_joystick(state);
         xSemaphoreGive(spi0_mutex);

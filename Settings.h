@@ -11,6 +11,8 @@ extern uint32_t sensorsMeassurementPeriod;
 extern uint32_t timeUpdatePeriod;
 extern uint32_t idleTime;
 
+extern  uint16_t joystickCalibration0;
+extern  uint16_t joystickCalibration1;
 typedef enum
 {
     // Value at every grid time linearly interpolated between the two

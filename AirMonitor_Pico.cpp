@@ -11,6 +11,7 @@
 #include "task.h"
 #include "Tasks.h"
 #include "Clock.h"
+#include "Settings.h"
 #include "Log.h"
 #include "Window.h"
 #include <inttypes.h>  // PRIx64
@@ -18,6 +19,7 @@
 #include "sensor_sht40.h"
 #include "sensor_bmp280.h"
 #include "Parameters.h"
+#include "hardware/adc.h"
 
 #define MOSFET_5V_PIN 17
 #define MOSFET_3V3_PIN 16
@@ -32,6 +34,9 @@
 #define TFT_WIDTH       480
 #define TFT_HEIGHT      320
 #define TFT_ROTATION    3
+
+#define ADC0_PIN 26
+#define ADC1_PIN 27
 
 constexpr Color BACKGROUND = {0x00, 0x00, 0x00};
 constexpr Color FOREGROUND  = {0xCC, 0xCC, 0xCC};
@@ -106,6 +111,35 @@ void initDiacritic()
 #define GPIO_PUSH_PIN 3
 #define GPIO_MOVE_PIN 9
 
+#define JOYSTICK_CALIBRATION_SAMPLES 16U
+#define JOYSTICK_CALIBRATION_MIN 1500U
+#define JOYSTICK_CALIBRATION_MAX 2600U
+
+// Idle offset of one joystick axis, averaged over several readings
+uint16_t calibrateJoystickAxis(uint8_t adcInput, uint16_t originalValue)
+{
+    uint32_t sum = 0U;
+    uint16_t accepted = 0U;
+
+    adc_select_input(adcInput);
+
+    for (uint16_t i = 0U; i < JOYSTICK_CALIBRATION_SAMPLES; i++)
+    {
+        const uint16_t value = adc_read();
+        if (value >= JOYSTICK_CALIBRATION_MIN && value <= JOYSTICK_CALIBRATION_MAX)
+        {
+            sum += value;
+            accepted++;
+        }
+    }
+    if (accepted == 0U)
+    {
+        return originalValue;
+    }
+
+    return (uint16_t)(sum / accepted);
+}
+
 void joystickCallback(uint gpio, uint32_t events)
 {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -170,15 +204,23 @@ int main()
     sensor_sdc41_init();
 
     printOnTheScreem("Initializing joystick");
-    gpio_init(GPIO_PUSH_PIN);
-    gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
-    gpio_init(GPIO_MOVE_PIN);
-    gpio_set_irq_enabled_with_callback(GPIO_MOVE_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
+    adc_init();
+    adc_gpio_init(ADC0_PIN);
+    adc_gpio_init(ADC1_PIN);
 
-    sleep_ms(100);
+    joystickCalibration0 = calibrateJoystickAxis(0, joystickCalibration0);
+    joystickCalibration1 = calibrateJoystickAxis(1, joystickCalibration1);
+
+    gpio_init(GPIO_PUSH_PIN);
+    gpio_init(GPIO_MOVE_PIN);
+    gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
+    gpio_set_irq_enabled_with_callback(GPIO_MOVE_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
 
     printOnTheScreem("Initializing freeRTOS kernel");
     intializeSemaphoresAndQueues();
+    xTaskCreate(joystickPressedTask,        "joystickPressedTask",        1000, NULL, 10, NULL);
+    xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);
+    xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 9, NULL);
     xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(setClockTimeTask,           "setClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(readbmp280Task,             "readbmp280Task",             1000, NULL, 2, NULL);
@@ -186,9 +228,6 @@ int main()
     xTaskCreate(readSCD41Task,              "readSCD41Task",              1000, NULL, 2, NULL);
     xTaskCreate(dataManagerTask,            "dataManagerTask",            1000, NULL, 1, NULL);
     xTaskCreate(timeChangedGUITask,         "timeChangedGUITask",         1000, NULL, 1, NULL);
-    xTaskCreate(joystickPressedTask,        "joystickPressedTask",        1000, NULL, 10, NULL);
-    xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);
-    xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 9, NULL);
     //xTaskCreate(writeLogTask,               "writeLogTask",               1000, NULL, 1, NULL);
     //xTaskCreate(writeValueToStorageTask,    "writeValueToStorageTask",    1000, NULL, 1, NULL);
     
