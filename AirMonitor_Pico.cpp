@@ -19,24 +19,12 @@
 #include "sensor_sht40.h"
 #include "sensor_bmp280.h"
 #include "Parameters.h"
+#include "Pinout.h"
 #include "hardware/adc.h"
 
-#define MOSFET_5V_PIN 17
-#define MOSFET_3V3_PIN 16
-
-#define TFT_SCLK        6
-#define TFT_MOSI        7
-#define TFT_MISO        255
-#define TFT_DC          15
-#define TFT_RST         14
-#define TFT_CS          13
-#define TFT_BACKLIGHT   255
 #define TFT_WIDTH       480
 #define TFT_HEIGHT      320
 #define TFT_ROTATION    3
-
-#define ADC0_PIN 26
-#define ADC1_PIN 27
 
 constexpr Color BACKGROUND = {0x00, 0x00, 0x00};
 constexpr Color FOREGROUND  = {0xCC, 0xCC, 0xCC};
@@ -107,9 +95,6 @@ void initDiacritic()
     addExtraCharacter(L'ť');
     addExtraCharacter(L'ý');
 }
-
-#define GPIO_PUSH_PIN 3
-#define GPIO_MOVE_PIN 9
 
 #define JOYSTICK_CALIBRATION_SAMPLES 16U
 #define JOYSTICK_CALIBRATION_MIN 1500U

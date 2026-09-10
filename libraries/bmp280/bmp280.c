@@ -70,7 +70,25 @@
 // number of calibration registers to be read
 #define NUM_CALIB_PARAMS 24
 
+static i2c_inst_t* bmp280_i2c = NULL;
+static uint bmp280_sda_pin = 0;
+static uint bmp280_scl_pin = 0;
+
+void bmp280_setPins(uint sda_pin, uint scl_pin, i2c_inst_t* i2c) {
+    if (i2c == NULL) {
+        return;
+    }
+
+    bmp280_sda_pin = sda_pin;
+    bmp280_scl_pin = scl_pin;
+    bmp280_i2c = i2c;
+}
+
 void bmp280_init() {
+    if (bmp280_i2c == NULL) {
+        return;
+    }
+
     // use the "handheld device dynamic" optimal setting (see datasheet)
     uint8_t buf[2];
     
@@ -80,24 +98,28 @@ void bmp280_init() {
     // send register number followed by its corresponding value
     buf[0] = REG_CONFIG;
     buf[1] = reg_config_val;
-    i2c_write_blocking(BMP280_I2C, ADDR, buf, 2, false);
+    i2c_write_blocking(bmp280_i2c, ADDR, buf, 2, false);
 
     // osrs_t x1, osrs_p x4, normal mode operation
     const uint8_t reg_ctrl_meas_val = (0x01 << 5) | (0x03 << 2) | (0x03);
     buf[0] = REG_CTRL_MEAS;
     buf[1] = reg_ctrl_meas_val;
-    i2c_write_blocking(BMP280_I2C, ADDR, buf, 2, false);
+    i2c_write_blocking(bmp280_i2c, ADDR, buf, 2, false);
 }
 
 void bmp280_read_raw(int32_t* temp, int32_t* pressure) {
+    if (bmp280_i2c == NULL) {
+        return;
+    }
+
     // BMP280 data registers are auto-incrementing and we have 3 temperature and
     // pressure registers each, so we start at 0xF7 and read 6 bytes to 0xFC
     // note: normal mode does not require further ctrl_meas and config register writes
 
     uint8_t buf[6];
     uint8_t reg = REG_PRESSURE_MSB;
-    i2c_write_blocking(BMP280_I2C, ADDR, &reg, 1, true);  // true to keep master control of bus
-    i2c_read_blocking(BMP280_I2C, ADDR, buf, 6, false);  // false - finished with bus
+    i2c_write_blocking(bmp280_i2c, ADDR, &reg, 1, true);  // true to keep master control of bus
+    i2c_read_blocking(bmp280_i2c, ADDR, buf, 6, false);  // false - finished with bus
 
     // store the 20 bit read in a 32 bit signed integer for conversion
     *pressure = (buf[0] << 12) | (buf[1] << 4) | (buf[2] >> 4);
@@ -105,9 +127,13 @@ void bmp280_read_raw(int32_t* temp, int32_t* pressure) {
 }
 
 void bmp280_reset() {
+    if (bmp280_i2c == NULL) {
+        return;
+    }
+
     // reset the device with the power-on-reset procedure
     uint8_t buf[2] = { REG_RESET, 0xB6 };
-    i2c_write_blocking(BMP280_I2C, ADDR, buf, 2, false);
+    i2c_write_blocking(bmp280_i2c, ADDR, buf, 2, false);
 }
 
 // intermediate function that calculates the fine resolution temperature
@@ -157,6 +183,10 @@ int32_t bmp280_convert_pressure(int32_t pressure, int32_t temp, struct bmp280_ca
 }
 
 void bmp280_get_calib_params(struct bmp280_calib_param* params) {
+    if (bmp280_i2c == NULL) {
+        return;
+    }
+
     // raw temp and pressure values need to be calibrated according to
     // parameters generated during the manufacturing of the sensor
     // there are 3 temperature params, and 9 pressure params, each with a LSB
@@ -164,9 +194,9 @@ void bmp280_get_calib_params(struct bmp280_calib_param* params) {
 
     uint8_t buf[NUM_CALIB_PARAMS] = { 0 };
     uint8_t reg = REG_DIG_T1_LSB;
-    i2c_write_blocking(BMP280_I2C, ADDR, &reg, 1, true);  // true to keep master control of bus
+    i2c_write_blocking(bmp280_i2c, ADDR, &reg, 1, true);  // true to keep master control of bus
     // read in one go as register addresses auto-increment
-    i2c_read_blocking(BMP280_I2C, ADDR, buf, NUM_CALIB_PARAMS, false);  // false, we're done reading
+    i2c_read_blocking(bmp280_i2c, ADDR, buf, NUM_CALIB_PARAMS, false);  // false, we're done reading
 
     // store these in a struct for later use
     params->dig_t1 = (uint16_t)(buf[1] << 8) | buf[0];

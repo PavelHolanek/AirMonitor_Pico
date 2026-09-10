@@ -4,6 +4,8 @@
  */
 #include "sensor_bmp280.h"
 #include "bmp280.h"
+#include "Pinout.h"
+#include "sensors_i2c.h"
 #include <stddef.h>
 #include <stdio.h>
 
@@ -14,21 +16,15 @@ struct bmp280_calib_param params;
 bool sensor_bmp280_init(void)
 {
     // useful information for picotool
-    bi_decl(bi_2pins_with_func(BMP280_I2C_SDA_PIN, BMP280_I2C_SCL_PIN, GPIO_FUNC_I2C));
+    bi_decl(bi_2pins_with_func(SENSORS_I2C_SDA_PIN, SENSORS_I2C_SCL_PIN, GPIO_FUNC_I2C));
     bi_decl(bi_program_description("BMP280 I2C example for the Raspberry Pi Pico"));
-    // I2C is "open drain", pull ups to keep signal high when no data is being sent
-    i2c_init(BMP280_I2C, 100 * 1000);
-    gpio_set_function(BMP280_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(BMP280_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    gpio_pull_up(BMP280_I2C_SDA_PIN);
-    gpio_pull_up(BMP280_I2C_SCL_PIN);
 
-    // configure BMP280
+    bmp280_setPins(SENSORS_I2C_SDA_PIN, SENSORS_I2C_SCL_PIN, sensors_i2c_init());
+
     bmp280_init();
-    // retrieve fixed compensation params
     bmp280_get_calib_params(&params);
     sleep_ms(250);
-    return true; // stub: report initialized
+    return true;
 }
 
 bool sensor_bmp280_read(sensor_bmp280_data_t* out)

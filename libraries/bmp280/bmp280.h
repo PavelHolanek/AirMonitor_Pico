@@ -5,10 +5,6 @@
 #include "pico/binary_info.h"
 #include "pico/stdlib.h"
 
-#define BMP280_I2C_SDA_PIN 20
-#define BMP280_I2C_SCL_PIN 21
-#define BMP280_I2C &i2c0_inst
-
 struct bmp280_calib_param {
     // temperature params
     uint16_t dig_t1;
@@ -27,6 +23,7 @@ struct bmp280_calib_param {
     int16_t dig_p9;
 };
 
+void bmp280_setPins(uint sda_pin, uint scl_pin, i2c_inst_t* i2c);
 void bmp280_init();
 void bmp280_read_raw(int32_t* temp, int32_t* pressure);
 void bmp280_reset();

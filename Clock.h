@@ -5,13 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "ds3231.h"
+#include "Pinout.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define SDA_PIN_CLOCK 18
-#define SDL_PIN_CLOCK 19
 
 static ds3231_t ds3231;
 

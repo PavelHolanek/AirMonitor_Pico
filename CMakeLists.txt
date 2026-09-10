@@ -89,6 +89,7 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/GUIManager.cpp
         GUI/Bitmaps.h
         Base.h
+        Pinout.h
         Clock.c
         Clock.h
         dataManager.c
@@ -105,6 +106,8 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         sensors/sensor_sht40.h
         sensors/sensor_bmp280.c
         sensors/sensor_bmp280.h
+        sensors/sensors_i2c.c
+        sensors/sensors_i2c.h
 )
 
 pico_set_program_name(AirMonitor_Pico "AirMonitor_Pico")
@@ -118,9 +121,41 @@ add_subdirectory(libraries/pico-displayDrivs/ili9488)
 add_subdirectory(libraries/pico-displayDrivs/gfx)
 add_subdirectory(libraries/pico-extras)
 add_subdirectory(libraries/ds3231)
-add_subdirectory(libraries/embedded-i2c-scd4x)
-add_subdirectory(libraries/embedded-i2c-sht4x)
 add_subdirectory(libraries/bmp280)
+
+#Sensirion sensors SHT40 and SCD41
+set(SENSIRION_SHT4X ${CMAKE_CURRENT_LIST_DIR}/libraries/embedded-i2c-sht4x)
+set(SENSIRION_SCD4X ${CMAKE_CURRENT_LIST_DIR}/libraries/embedded-i2c-scd4x)
+
+foreach(shared IN ITEMS sensirion_common.c sensirion_common.h
+                        sensirion_i2c.c sensirion_i2c.h
+                        sensirion_i2c_hal.h sensirion_config.h)
+    file(SHA256 ${SENSIRION_SHT4X}/${shared} sht4x_hash)
+    file(SHA256 ${SENSIRION_SCD4X}/${shared} scd4x_hash)
+    if(NOT sht4x_hash STREQUAL scd4x_hash)
+        message(FATAL_ERROR
+            "${shared} differs between the SHT4x and SCD4x submodules. "
+            "The shared Sensirion code can no longer be compiled just once - "
+            "split the sensirion target into two libraries first.")
+    endif()
+endforeach()
+
+add_library(sensirion
+        ${SENSIRION_SHT4X}/sht4x_i2c.c
+        ${SENSIRION_SCD4X}/scd4x_i2c.c
+        ${SENSIRION_SHT4X}/sensirion_common.c
+        ${SENSIRION_SHT4X}/sensirion_i2c.c
+        sensors/sensirion/sensirion_i2c_hal.c
+)
+
+target_include_directories(sensirion PUBLIC
+        ${SENSIRION_SHT4X}
+        ${SENSIRION_SCD4X}
+        ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/sensors
+)
+
+target_link_libraries(sensirion hardware_i2c hardware_gpio pico_stdlib)
 
 # Add the standard library to the build
 target_link_libraries(AirMonitor_Pico
@@ -143,8 +178,7 @@ target_link_libraries(AirMonitor_Pico
         ili9488
         gfx
 		pico_ds3231
-		scd4x
-        sht4x
+		sensirion
 		bmp280
         )
 
