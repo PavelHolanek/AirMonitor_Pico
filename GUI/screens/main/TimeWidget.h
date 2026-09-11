@@ -2,8 +2,8 @@
 #define TIME_WIDGET_H
 
 #include <wchar.h>
-#include "NavigableWidget.h"
-#include "GraphicElement.h"
+#include "core/NavigableWidget.h"
+#include "core/GraphicElement.h"
 #include "Clock.h"
 
 class TimeWidget : public NavigableWidget

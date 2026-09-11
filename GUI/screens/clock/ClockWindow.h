@@ -2,7 +2,7 @@
 #ifndef CLOCK_WINDOW_H
 #define CLOCK_WINDOW_H
 
-#include "Window.h"
+#include "core/Window.h"
 #include "TimePickerWiget.h"
 
 class ClockWindow : public Window

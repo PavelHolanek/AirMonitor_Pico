@@ -8,7 +8,6 @@
 #include "sensors/sensor_bmp280.h"
 #include "sensors/sensor_sht40.h"
 #include "sensors/sensor_sdc41.h"
-#include "GraphData.h"
 #include <stdint.h>
 #include <stdio.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"

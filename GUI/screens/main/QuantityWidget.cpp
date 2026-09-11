@@ -1,6 +1,6 @@
 #include "QuantityWidget.h"
 #include "Parameters.h"
-#include "Bitmaps.h"
+#include "core/Bitmaps.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include <cstdio>
 

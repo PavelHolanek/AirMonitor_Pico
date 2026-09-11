@@ -1,8 +1,8 @@
 #ifndef SETTINGS_WIDGET_H
 #define SETTINGS_WIDGET_H
 
-#include "NavigableWidget.h"
-#include "GraphicElement.h"
+#include "core/NavigableWidget.h"
+#include "core/GraphicElement.h"
 
 class SettingsWidget : public NavigableWidget
 {

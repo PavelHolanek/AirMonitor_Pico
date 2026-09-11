@@ -50,44 +50,58 @@ execute_process(
 add_definitions(-DCOMMIT_SHA="${COMMIT_SHA}")
 
 add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
-        GUI/GraphicElement.cpp
-        GUI/Area.cpp
-        GUI/Text.cpp
-        GUI/Line.cpp
-        GUI/BitMap32.cpp
-        GUI/BitMap48.cpp
-        GUI/NavigableWidget.cpp
-        GUI/QuantityWidget.cpp
-        GUI/SettingsWidget.cpp
-        GUI/TimeWidget.cpp
-        GUI/Window.cpp
-        GUI/MainWindow.cpp
-        GUI/SettingWindow.cpp
-        GUI/ClockWindow.cpp
-        GUI/GraphWindow.cpp
-        GUI/TimePickerWiget.cpp
-        GUI/GraphWidget.cpp
-        GUI/GraphicElement.h
-        GUI/Widget.h
-        GUI/Widget.cpp
-        GUI/NavigableWidget.h
-        GUI/QuantityWidget.h
-        GUI/SettingsWidget.h
-        GUI/TimeWidget.h
-        GUI/Window.h
-        GUI/MainWindow.h
-        GUI/SettingWindow.h
-        GUI/ClockWindow.h
-        GUI/GraphWindow.h
-        GUI/TimePickerWiget.h
-        GUI/GraphWidget.h
-        GUI/GraphData.h
-        GUI/GraphData.c
-        GUI/GraphAlgorithm_LinearInterpolation.c
-        GUI/GraphAlgorithm_BucketAverage.c
+        # --- GUI: shared foundation ---
+        GUI/core/GraphicElement.h
+        GUI/core/GraphicElement.cpp
+        GUI/core/Area.cpp
+        GUI/core/Text.cpp
+        GUI/core/Line.cpp
+        GUI/core/BitMap32.cpp
+        GUI/core/BitMap48.cpp
+        GUI/core/Bitmaps.h
+        GUI/core/Widget.h
+        GUI/core/Widget.cpp
+        GUI/core/NavigableWidget.h
+        GUI/core/NavigableWidget.cpp
+        GUI/core/Window.h
+        GUI/core/Window.cpp
+
+        # --- GUI: window switching and the C entry points ---
         GUI/GUIManager.h
+        GUI/GUIManager_c.h
         GUI/GUIManager.cpp
-        GUI/Bitmaps.h
+
+        # --- GUI: main screen ---
+        GUI/screens/main/MainWindow.h
+        GUI/screens/main/MainWindow.cpp
+        GUI/screens/main/QuantityWidget.h
+        GUI/screens/main/QuantityWidget.cpp
+        GUI/screens/main/SettingsWidget.h
+        GUI/screens/main/SettingsWidget.cpp
+        GUI/screens/main/TimeWidget.h
+        GUI/screens/main/TimeWidget.cpp
+
+        # --- GUI: settings screen ---
+        GUI/screens/settings/SettingWindow.h
+        GUI/screens/settings/SettingWindow.cpp
+
+        # --- GUI: clock screen ---
+        GUI/screens/clock/ClockWindow.h
+        GUI/screens/clock/ClockWindow.cpp
+        GUI/screens/clock/TimePickerWiget.h
+        GUI/screens/clock/TimePickerWiget.cpp
+
+        # --- GUI: graph screen ---
+        GUI/screens/graph/GraphWindow.h
+        GUI/screens/graph/GraphWindow.cpp
+        GUI/screens/graph/GraphWidget.h
+        GUI/screens/graph/GraphWidget.cpp
+        GUI/screens/graph/GraphData.h
+        GUI/screens/graph/GraphData.c
+        GUI/screens/graph/GraphAlgorithm_LinearInterpolation.c
+        GUI/screens/graph/GraphAlgorithm_BucketAverage.c
+
+        # --- application core ---
         Base.h
         Pinout.h
         Clock.c
@@ -100,6 +114,9 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         Tasks.h
         Log.c
         Log.h
+        Parameters.h
+
+        # --- sensors ---
         sensors/sensor_sdc41.c
         sensors/sensor_sdc41.h
         sensors/sensor_sht40.c
@@ -167,7 +184,7 @@ target_link_libraries(AirMonitor_Pico
 target_include_directories(AirMonitor_Pico PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/..
-        ${CMAKE_CURRENT_LIST_DIR}/GUI
+        ${CMAKE_CURRENT_LIST_DIR}/GUI   # GUI headers are included as core/... or screens/<screen>/...
         ${CMAKE_CURRENT_LIST_DIR}/sensors
 )
 

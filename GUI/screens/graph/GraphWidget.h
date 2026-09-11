@@ -1,7 +1,7 @@
 #ifndef GRAPH_WIDGET_H
 #define GRAPH_WIDGET_H
 
-#include "Widget.h"
+#include "core/Widget.h"
 #include "GraphData.h"
 #include "Base.h"
 

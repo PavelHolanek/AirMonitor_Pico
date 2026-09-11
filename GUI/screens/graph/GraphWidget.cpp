@@ -1,6 +1,6 @@
 #include "GraphWidget.h"
 #include "Parameters.h"
-#include "GraphicElement.h"
+#include "core/GraphicElement.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "dataManager.h"
 #include "Settings.h"

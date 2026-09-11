@@ -2,7 +2,8 @@
 #ifndef SETTING_WINDOW_H
 #define SETTING_WINDOW_H
 
-#include "Window.h"
+#include "core/Window.h"
+#include "core/NavigableWidget.h"
 
 #define SETTINGS_ROWS_COUNT 5
 

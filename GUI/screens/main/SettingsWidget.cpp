@@ -1,6 +1,6 @@
 #include "SettingsWidget.h"
 #include "Parameters.h"
-#include "Bitmaps.h"
+#include "core/Bitmaps.h"
 
 SettingsWidget::SettingsWidget()
     : NavigableWidget(), icon(nullptr)

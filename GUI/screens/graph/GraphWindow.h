@@ -1,7 +1,8 @@
 #ifndef GRAPH_WINDOW_H
 #define GRAPH_WINDOW_H
 
-#include "Window.h"
+#include "core/Window.h"
+#include "core/GraphicElement.h"
 #include "GraphWidget.h"
 #include "GraphData.h"
 

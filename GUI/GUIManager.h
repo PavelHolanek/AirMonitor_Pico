@@ -2,16 +2,11 @@
 #define GUI_MANAGER_H
 
 #include "Base.h"
-#include "Window.h"
-#include "MainWindow.h"
-#include "SettingWindow.h"
-#include "ClockWindow.h"
-#include "GraphWindow.h"
-#include "GraphData.h"
-
-// Forward declarations to avoid including heavy headers here
-class MainWindow;
-class SettingWindow;
+#include "core/Window.h"
+#include "screens/main/MainWindow.h"
+#include "screens/settings/SettingWindow.h"
+#include "screens/clock/ClockWindow.h"
+#include "screens/graph/GraphWindow.h"
 
 extern Window* currentWindow;
 extern MainWindow* mainWindow;

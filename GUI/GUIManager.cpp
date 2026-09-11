@@ -1,8 +1,8 @@
 #include "GUIManager.h"
-#include "MainWindow.h"
-#include "SettingWindow.h"
-#include "ClockWindow.h"
-#include "GraphWindow.h"
+#include "screens/main/MainWindow.h"
+#include "screens/settings/SettingWindow.h"
+#include "screens/clock/ClockWindow.h"
+#include "screens/graph/GraphWindow.h"
 #include <stdio.h>
 
 Window* currentWindow = nullptr;

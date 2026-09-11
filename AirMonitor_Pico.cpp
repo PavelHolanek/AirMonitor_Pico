@@ -13,7 +13,6 @@
 #include "Clock.h"
 #include "Settings.h"
 #include "Log.h"
-#include "Window.h"
 #include <inttypes.h>  // PRIx64
 #include "sensor_sdc41.h"
 #include "sensor_sht40.h"

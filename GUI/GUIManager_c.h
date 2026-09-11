@@ -3,8 +3,7 @@
 
 //must have the same name and signature as GUIManager.h
 
-#include "../Base.h"
-#include "GraphData.h"
+#include "Base.h"
 #include "Clock.h"
 
 extern void gui_init();

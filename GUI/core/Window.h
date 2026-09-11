@@ -1,9 +1,8 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "SettingsWidget.h"
-#include "TimeWidget.h"
-#include "QuantityWidget.h"
+#include "Base.h" // brings JoystickState
+
 class Window
 {
 public:
@@ -18,7 +17,5 @@ public:
     // Mapping (0..3): 0=right, 1=up, 2=left, 3=down
     static uint8_t getDominantState(JoystickState state);
 };
-
-// Derived windows are declared in their own headers now
 
 #endif // WINDOW_H

@@ -3,8 +3,8 @@
 
 #include <cstdint>
 #include <wchar.h>
-#include "NavigableWidget.h"
-#include "GraphicElement.h"
+#include "core/NavigableWidget.h"
+#include "core/GraphicElement.h"
 #include "Base.h"
 
 class QuantityWidget : public NavigableWidget
