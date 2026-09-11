@@ -109,6 +109,10 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/screens/graph/GraphAlgorithm_LinearInterpolation.c
         GUI/screens/graph/GraphAlgorithm_BucketAverage.c
 
+        # --- GUI: calibration screen ---
+        GUI/screens/calibration/CalibrationWindow.h
+        GUI/screens/calibration/CalibrationWindow.cpp
+
         # --- application core ---
         Base.h
         Pinout.h

@@ -2,17 +2,27 @@
 #ifndef ENUM_SETTING_WIDGET_H
 #define ENUM_SETTING_WIDGET_H
 
+#include <stdint.h>
 #include "SettingWidget.h"
 
 class EnumSettingWidget : public SettingWidget
 {
 private:
-    int* enumValue;    
-    char** enumNames;
+    uint8_t* value;
+
+    const wchar_t* const* labels;
+
+    uint8_t labelCount;
+
+    const wchar_t* currentLabel() const;
 
 public:
-    EnumSettingWidget(char* title, int* enumValue);
+    EnumSettingWidget(const wchar_t* title, uint8_t* value,
+                      const wchar_t* const* labels, uint8_t labelCount);
     virtual ~EnumSettingWidget();
+
+    void moveLeft() override;
+    void moveRight() override;
 
     void update() override;
     void applySetting() override;

@@ -3,15 +3,16 @@
 #define SCREEN_SETTING_WIDGET_H
 
 #include "SettingWidget.h"
-#include "../../core/Window"
+#include "core/Window.h"
 
 class ScreenSettingWidget : public SettingWidget
 {
 private:
-    Window* window
+    // Not owned - the windows live for the whole run and GUIManager holds them.
+    Window* window;
 
 public:
-    ScreenSettingWidget(char* title, Window* window);
+    ScreenSettingWidget(const wchar_t* title, Window* window);
     virtual ~ScreenSettingWidget();
 
     void update() override;

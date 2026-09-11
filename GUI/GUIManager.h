@@ -7,12 +7,14 @@
 #include "screens/settings/SettingWindow.h"
 #include "screens/clock/ClockWindow.h"
 #include "screens/graph/GraphWindow.h"
+#include "screens/calibration/CalibrationWindow.h"
 
 extern Window* currentWindow;
 extern MainWindow* mainWindow;
 extern SettingWindow* settingsWindow;
 extern ClockWindow* clockWindow;
 extern GraphWindow* graphWindow;
+extern CalibrationWindow* calibrationWindow;
 
 extern "C"
 {

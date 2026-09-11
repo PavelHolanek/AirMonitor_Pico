@@ -40,11 +40,11 @@ extern bool useFixedValuesSpanForGraph;
 extern bool developerMode;
 extern bool screenBacklightWhenIdle;
 
-extern uint32_t temperatureCalibration;
-extern uint32_t preassureCalibration;
-extern uint32_t humidityCalibration;
-extern uint32_t co2Calibration;
 
+extern int32_t temperatureCalibration;
+extern int32_t preassureCalibration;
+extern int32_t humidityCalibration;
+extern int32_t co2Calibration;
 #ifdef __cplusplus
 }
 #endif

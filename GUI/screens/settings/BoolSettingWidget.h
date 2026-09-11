@@ -7,10 +7,10 @@
 class BoolSettingWidget : public SettingWidget
 {
 private:
-    bool *value;
+    bool* value;
 
 public:
-    BoolSettingWidget(char* title, bool *value);
+    BoolSettingWidget(const wchar_t* title, bool* value);
     virtual ~BoolSettingWidget();
 
     void update() override;

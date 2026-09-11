@@ -158,6 +158,11 @@ void MainWindow::joystickAction(JoystickState state)
         if (currentWidget == timeWidget)
         {
             gui_changeWindow(clockWindow);
+            return;
+        }
+        if (currentWidget == settingsIconWidget)
+        {
+            gui_changeWindow(settingsWindow);
         }
         return;
     }

@@ -57,4 +57,27 @@ constexpr Color COLOR_TEMPERATURE_2 = {0x3F, 0x10, 0x00};
 constexpr Color COLOR_PRESSURE_2    = {0x30, 0x00, 0x1E};
 constexpr Color COLOR_HUMIDITY_2    = {0x14, 0x14, 0x3C};
 constexpr Color COLOR_CO2_2         = {0x19, 0x37, 0x05};
+
+//SETTING WINDOW
+constexpr uint16_t SETTINGS_MARGIN = 20;
+constexpr uint16_t SETTINGS_ROW_WIDTH = PARAM_SCREEN_WIDTH - 2 * SETTINGS_MARGIN;
+constexpr uint16_t SETTINGS_ROW_HEIGHT = 44;
+// Pitch between two rows, so the first five still end above the screen bottom.
+constexpr uint16_t SETTINGS_ROW_PITCH = SETTINGS_ROW_HEIGHT + 8;
+constexpr uint16_t SETTINGS_FIRST_ROW_Y = 60;
+constexpr uint16_t SETTINGS_ROW_PADDING = 12;
+constexpr uint8_t SETTINGS_TITLE_TEXT_SIZE = 3;
+// Built-in font cell is 6x8 px scaled by the text size, which is what centres
+// the title vertically and caps how long it may be.
+constexpr uint16_t SETTINGS_ROW_TEXT_WIDTH = 6 * SETTINGS_TITLE_TEXT_SIZE;
+constexpr uint16_t SETTINGS_ROW_TEXT_HEIGHT = 8 * SETTINGS_TITLE_TEXT_SIZE;
+constexpr uint16_t SETTINGS_ICON_SIZE = 32;
+// How many rows fit below the heading. Derived, so moving the list start or the
+// pitch keeps it correct.
+constexpr uint8_t SETTINGS_VISIBLE_ROWS_COUNT =
+        (PARAM_SCREEN_HEIGHT - SETTINGS_FIRST_ROW_Y) / SETTINGS_ROW_PITCH;
+
+// Hint line under the last calibration row, small enough to stay out of the way.
+constexpr uint8_t SETTINGS_HINT_TEXT_SIZE = 2;
+
 #endif // PARAMETERS_H

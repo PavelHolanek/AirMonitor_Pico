@@ -3,6 +3,7 @@
 #include "screens/settings/SettingWindow.h"
 #include "screens/clock/ClockWindow.h"
 #include "screens/graph/GraphWindow.h"
+#include "screens/calibration/CalibrationWindow.h"
 #include <stdio.h>
 
 Window* currentWindow = nullptr;
@@ -10,6 +11,7 @@ MainWindow* mainWindow = nullptr;
 SettingWindow* settingsWindow = nullptr;
 ClockWindow* clockWindow = nullptr;
 GraphWindow* graphWindow = nullptr;
+CalibrationWindow* calibrationWindow = nullptr;
 
 extern "C" {
 
@@ -31,6 +33,8 @@ void gui_init()
     mainWindow = new MainWindow{};
     clockWindow = new ClockWindow{};
     graphWindow = new GraphWindow{};
+    calibrationWindow = new CalibrationWindow{};
+    settingsWindow = new SettingWindow{};
     currentWindow = mainWindow;
     currentWindow->enterWindow();
 }
