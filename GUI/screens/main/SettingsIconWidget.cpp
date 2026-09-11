@@ -1,31 +1,31 @@
-#include "SettingsWidget.h"
+#include "SettingsIconWidget.h"
 #include "Parameters.h"
 #include "core/Bitmaps.h"
 
-SettingsWidget::SettingsWidget()
+SettingsIconWidget::SettingsIconWidget()
     : NavigableWidget(), icon(nullptr)
 {
 }
 
-void SettingsWidget::buttonPressed()
+void SettingsIconWidget::buttonPressed()
 {
     // Placeholder for settings widget button action
     if (area) area->Paint();
 }
 
-void SettingsWidget::leftMove()
+void SettingsIconWidget::leftMove()
 {
     // Placeholder left movement in settings
     if (area) area->Paint();
 }
 
-void SettingsWidget::rightMove()
+void SettingsIconWidget::rightMove()
 {
     // Placeholder right movement in settings
     if (area) area->Paint();
 }
 
-SettingsWidget::~SettingsWidget()
+SettingsIconWidget::~SettingsIconWidget()
 {
     if (icon)
     {
@@ -34,7 +34,7 @@ SettingsWidget::~SettingsWidget()
     }
 }
 
-void SettingsWidget::update()
+void SettingsIconWidget::update()
 {
     if (!area) return;
 
@@ -63,13 +63,13 @@ void SettingsWidget::update()
     icon->Paint();
 }
 
-void SettingsWidget::selected()
+void SettingsIconWidget::selected()
 {
     area->backgroundColor = PARAM_COLOR_GRAY_1;
     area->color = PARAM_COLOR_BLACK;
     update();
 }
-void SettingsWidget::deselected()
+void SettingsIconWidget::deselected()
 {
     area->backgroundColor = PARAM_COLOR_BLACK;
     area->color = PARAM_COLOR_WHITE;

@@ -2,6 +2,7 @@
 #define SETTINGS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +27,23 @@ typedef enum
     GRAPH_ALGORITHM_COUNT
 } GRAPH_ALGORITHM;
 
+typedef enum {
+    INTERVAL_2_MIN = 0, 
+    INTERVAL_5_MIN, 
+    INTERVAL_10_MIN 
+} INTERVAL;
+
 extern GRAPH_ALGORITHM graphAlgorithm;
+extern INTERVAL meassurementInterval;
+
+extern bool useFixedValuesSpanForGraph;
+extern bool developerMode;
+extern bool screenBacklightWhenIdle;
+
+extern uint32_t temperatureCalibration;
+extern uint32_t preassureCalibration;
+extern uint32_t humidityCalibration;
+extern uint32_t co2Calibration;
 
 #ifdef __cplusplus
 }

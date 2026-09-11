@@ -16,7 +16,7 @@ MainWindow::MainWindow()
 
     // time and settings are generic navigable widgets
     timeWidget    = new TimeWidget();
-    settingWidget = new SettingsWidget();
+    settingsIconWidget = new SettingsIconWidget();
 
     // create simple area layouts for each widget (positions/sizes are examples)
     if (temperatureWidget) {
@@ -61,11 +61,11 @@ MainWindow::MainWindow()
         timeWidget->area->backgroundColor = PARAM_COLOR_BLACK;
         timeWidget->area->color = PARAM_COLOR_WHITE;
     }
-    if (settingWidget) {
-        //settingWidget->area = new Area(HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
-        settingWidget->area = new Area(HEADER_MARGIN + SENSOR_WIDGET_PADDING, HEADER_MARGIN, 40, 40);
-        settingWidget->area->backgroundColor = PARAM_COLOR_BLACK;
-        settingWidget->area->color = PARAM_COLOR_WHITE;
+    if (settingsIconWidget) {
+        //settingsIconWidget->area = new Area(HEADER_MARGIN, HEADER_MARGIN, PARAM_SCREEN_WIDTH / 2 - 2 * HEADER_MARGIN, HEADER_HEIGHT - 2 * HEADER_MARGIN);
+        settingsIconWidget->area = new Area(HEADER_MARGIN + SENSOR_WIDGET_PADDING, HEADER_MARGIN, 40, 40);
+        settingsIconWidget->area->backgroundColor = PARAM_COLOR_BLACK;
+        settingsIconWidget->area->color = PARAM_COLOR_WHITE;
     }
 
     // set the initial current widget (temperature)
@@ -80,12 +80,12 @@ MainWindow::MainWindow()
 
     // Wire up navigable neighbors for 2 columns x 3 rows grid
     // Row 1: settings | time
-    if (settingWidget && timeWidget) {
-        settingWidget->right = timeWidget;
-        timeWidget->left = settingWidget;
+    if (settingsIconWidget && timeWidget) {
+        settingsIconWidget->right = timeWidget;
+        timeWidget->left = settingsIconWidget;
 
         // Down from header row to sensor row 2
-        settingWidget->down = temperatureWidget;
+        settingsIconWidget->down = temperatureWidget;
         timeWidget->down = pressureWidget;
     }
 
@@ -95,7 +95,7 @@ MainWindow::MainWindow()
         pressureWidget->left = temperatureWidget;
 
         // Up links to header row
-        temperatureWidget->up = settingWidget;
+        temperatureWidget->up = settingsIconWidget;
         pressureWidget->up = timeWidget;
 
         // Down links to row 3
@@ -115,7 +115,7 @@ MainWindow::MainWindow()
 
     // Ensure invalid directions are nullptr (grid boundaries)
     // Row 1 boundaries
-    if (settingWidget) { settingWidget->left = nullptr; settingWidget->up = nullptr; }
+    if (settingsIconWidget) { settingsIconWidget->left = nullptr; settingsIconWidget->up = nullptr; }
     if (timeWidget) { timeWidget->right = nullptr; timeWidget->up = nullptr; }
 
     // Row 2 boundaries
@@ -227,7 +227,7 @@ void MainWindow::enterWindow()
     if (pressureWidget)    pressureWidget->update();
     if (co2Widget)         co2Widget->update();
     if (timeWidget)        timeWidget->update();
-    if (settingWidget)     settingWidget->update(); 
+    if (settingsIconWidget)     settingsIconWidget->update(); 
 }
 
 MainWindow::~MainWindow()

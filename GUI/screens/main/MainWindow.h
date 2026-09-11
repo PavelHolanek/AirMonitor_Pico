@@ -4,7 +4,7 @@
 
 #include "core/Window.h"
 #include "QuantityWidget.h"
-#include "SettingsWidget.h"
+#include "SettingsIconWidget.h"
 #include "TimeWidget.h"
 
 class MainWindow : public Window
@@ -24,7 +24,7 @@ public:
     QuantityWidget* pressureWidget;
     QuantityWidget* co2Widget;
     TimeWidget* timeWidget;
-    SettingsWidget* settingWidget;
+    SettingsIconWidget* settingsIconWidget;
 
     void enterQuantityWindow(QUANTITY);
     void enterSettingWindow();

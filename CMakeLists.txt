@@ -76,14 +76,22 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/screens/main/MainWindow.cpp
         GUI/screens/main/QuantityWidget.h
         GUI/screens/main/QuantityWidget.cpp
-        GUI/screens/main/SettingsWidget.h
-        GUI/screens/main/SettingsWidget.cpp
+        GUI/screens/main/SettingsIconWidget.h
+        GUI/screens/main/SettingsIconWidget.cpp
         GUI/screens/main/TimeWidget.h
         GUI/screens/main/TimeWidget.cpp
 
         # --- GUI: settings screen ---
         GUI/screens/settings/SettingWindow.h
         GUI/screens/settings/SettingWindow.cpp
+        GUI/screens/settings/SettingWidget.h
+        GUI/screens/settings/SettingWidget.cpp
+        GUI/screens/settings/BoolSettingWidget.h
+        GUI/screens/settings/BoolSettingWidget.cpp
+        GUI/screens/settings/EnumSettingWidget.h
+        GUI/screens/settings/EnumSettingWidget.cpp
+        GUI/screens/settings/ScreenSettingWidget.h
+        GUI/screens/settings/ScreenSettingWidget.cpp
 
         # --- GUI: clock screen ---
         GUI/screens/clock/ClockWindow.h

@@ -1,14 +1,14 @@
-#ifndef SETTINGS_WIDGET_H
-#define SETTINGS_WIDGET_H
+#ifndef SETTINGS_ICON_WIDGET_H
+#define SETTINGS_ICON_WIDGET_H
 
 #include "core/NavigableWidget.h"
 #include "core/GraphicElement.h"
 
-class SettingsWidget : public NavigableWidget
+class SettingsIconWidget : public NavigableWidget
 {
 public:
-    SettingsWidget();
-    virtual ~SettingsWidget();
+    SettingsIconWidget();
+    virtual ~SettingsIconWidget();
     void update() override;
     void buttonPressed();
     void leftMove();
@@ -19,5 +19,5 @@ private:
     bitMap48* icon;
 };
 
-#endif // SETTINGS_WIDGET_H
+#endif // SETTINGS_ICON_WIDGET_H
 
