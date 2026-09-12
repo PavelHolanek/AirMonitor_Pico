@@ -285,6 +285,82 @@ void drawSegment(const PixelPoint& from, const PixelPoint& to, int16_t yBase, Co
     drawLine2Px(x0, y0, x1, y1, lineColor);
 }
 
+// Everything the picture needs, worked out once and then replayed for each band.
+// Collecting the samples and running the algorithm again per band would repeat
+// all of that work for nothing.
+struct GraphFrame
+{
+    const graph_input_t* input;   // null when there is no data to frame at all
+    const PixelPoint* pixels;
+    int16_t left;
+    int16_t right;
+    int16_t top;
+    int16_t bottom;
+    int16_t axisX;
+    int16_t minX;
+    int16_t yBase;
+    int32_t topValue;
+    int32_t bottomValue;
+    QUANTITY quantity;
+    Color background;
+    Color lineColor;
+    Color areaColor;
+    bool hasCurve;                // false keeps the axes and the time frame only
+};
+
+// One pass over the whole picture. With a band's framebuffer up and clipping on,
+// whatever falls outside the band is dropped and the pass that owns it draws it.
+void paintGraphFrame(const GraphFrame& frame)
+{
+    GFX_drawLine(frame.axisX, frame.top, frame.axisX, frame.bottom, PARAM_COLOR_WHITE);
+    GFX_drawLine(frame.axisX, frame.bottom, frame.right, frame.bottom, PARAM_COLOR_WHITE);
+
+    if (frame.input == nullptr)
+    {
+        return;
+    }
+
+    // Independent of the data, so the time frame shows even when there is
+    // nothing to plot in it yet.
+    drawTimeLabels(frame.input, frame.left, frame.right,
+                   (int16_t)(frame.bottom + GRAPH_TIME_LABEL_GAP),
+                   PARAM_COLOR_WHITE, frame.background);
+
+    if (!frame.hasCurve)
+    {
+        return;
+    }
+
+    drawAxisLabel(frame.topValue, frame.quantity, frame.axisX, frame.minX, frame.top,
+                  PARAM_COLOR_WHITE, frame.background);
+    drawAxisLabel(frame.bottomValue, frame.quantity, frame.axisX, frame.minX, frame.bottom,
+                  PARAM_COLOR_WHITE, frame.background);
+
+    // An invalid point breaks the curve on purpose - the algorithm marks a gap
+    // in the data that way, so it must not be bridged by a segment.
+    const PixelPoint* prev = nullptr;
+    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
+    {
+        if (!frame.pixels[i].valid)
+        {
+            prev = nullptr;
+            continue;
+        }
+
+        if (prev)
+        {
+            drawSegment(*prev, frame.pixels[i], frame.yBase, frame.lineColor, frame.areaColor);
+        }
+        else if ((i + 1U >= GRAPH_POINTS_COUNT) || !frame.pixels[i + 1U].valid)
+        {
+            // Point with no valid neighbour on either side would draw nothing.
+            GFX_fillRect(frame.pixels[i].x, frame.pixels[i].y, 2, 2, frame.lineColor);
+        }
+
+        prev = &frame.pixels[i];
+    }
+}
+
 GraphWidget::GraphWidget()
     : Widget(),
       quantity(QUANTITY_TEMPERATURE),
@@ -501,111 +577,124 @@ void GraphWidget::update()
 {
     if (!area) return;
 
-    area->Paint();
-
-    const uint16_t right = area->posX + area->sizeX - GRAPH_MARGIN;
-    const uint16_t top = area->posY + GRAPH_MARGIN;
+    GraphFrame frame{};
+    frame.quantity = quantity;
+    frame.background = area->backgroundColor;
+    frame.minX = (int16_t)area->posX;
+    frame.right = (int16_t)(area->posX + area->sizeX - GRAPH_MARGIN);
+    frame.top = (int16_t)(area->posY + GRAPH_MARGIN);
 
     // The axis is lifted by a whole text row: the time labels live between it
     // and the bottom margin.
-    const uint16_t bottom = area->posY + area->sizeY - GRAPH_MARGIN
-                            - GRAPH_TIME_LABEL_GAP - GRAPH_LABEL_CHAR_HEIGHT;
+    frame.bottom = (int16_t)(area->posY + area->sizeY - GRAPH_MARGIN
+                             - GRAPH_TIME_LABEL_GAP - GRAPH_LABEL_CHAR_HEIGHT);
 
     const uint16_t plotWidth = GRAPH_INTERVALS_COUNT * GRAPH_INTERVAL_WIDTH;
-    const uint16_t left = right - plotWidth;
-
-    const uint16_t axisX = left - 1U;
-
-    GFX_drawLine(axisX, top, axisX, bottom, PARAM_COLOR_WHITE);
-    GFX_drawLine(axisX, bottom, right, bottom, PARAM_COLOR_WHITE);
+    frame.left = (int16_t)(frame.right - plotWidth);
+    frame.axisX = (int16_t)(frame.left - 1);
 
     graph_input_t input;
-    if (!buildInput(&input))
-    {
-        return;
-    }
+    PixelPoint pixels[GRAPH_POINTS_COUNT];
 
-    // Independent of the data, so the time frame shows even when there is
-    // nothing to plot in it yet.
-    drawTimeLabels(&input, (int16_t)left, (int16_t)right,
-                   (int16_t)(bottom + GRAPH_TIME_LABEL_GAP),
-                   PARAM_COLOR_WHITE, area->backgroundColor);
+    frame.input = buildInput(&input) ? &input : nullptr;
+    frame.pixels = pixels;
 
-    if (!graph_computePoints(&input, graphAlgorithm, &points))
-    {
-        return;
-    }
-
-    // Range follows the data, so it changes with every scope and every update.
     int32_t bottomValue = 0;
     int32_t topValue = 1;
-    if (!computeValueRange(&bottomValue, &topValue))
+
+    // Range follows the data, so it changes with every scope and every update.
+    if (frame.input != nullptr
+        && graph_computePoints(&input, graphAlgorithm, &points)
+        && computeValueRange(&bottomValue, &topValue))
     {
+        const int32_t valueRange = topValue - bottomValue;
+        const uint16_t plotHeight = (frame.bottom > frame.top)
+                                    ? (uint16_t)(frame.bottom - frame.top)
+                                    : 1U;
+
+        // Grid points are evenly spaced - that is what the fixed interval count buys us.
+        for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
+        {
+            pixels[i].valid = points.valid[i];
+            if (!pixels[i].valid)
+            {
+                pixels[i].x = 0;
+                pixels[i].y = 0;
+                continue;
+            }
+
+            int32_t value = points.values[i];
+            if (value > topValue)
+            {
+                value = topValue;
+            }
+            else if (value < bottomValue)
+            {
+                value = bottomValue;
+            }
+
+            const uint32_t xRel = (uint32_t)(((uint64_t)i * plotWidth) / GRAPH_INTERVALS_COUNT);
+            const uint32_t yRel = (uint32_t)(((uint64_t)(topValue - value) * plotHeight) / (uint32_t)valueRange);
+
+            pixels[i].x = (int16_t)(frame.left + xRel);
+            pixels[i].y = (int16_t)(frame.top + yRel);
+        }
+
+        frame.topValue = topValue;
+        frame.bottomValue = bottomValue;
+        frame.yBase = (frame.bottom > 0) ? (int16_t)(frame.bottom - 1) : 0;
+        frame.lineColor = quantityLineColor(quantity);
+        frame.areaColor = quantityAreaColor(quantity);
+        frame.hasCurve = true;
+    }
+
+    // The area is far bigger than the framebuffer, so it goes out in horizontal
+    // bands - as many rows as still fit.
+    const uint16_t maxBandHeight = (uint16_t)(BUFFER_MAX_SIZE / (3U * (uint32_t)area->sizeX));
+
+    if (hasFrameBuffer() || maxBandHeight == 0U)
+    {
+        // Somebody else's buffer is up, or a single row of the area does not fit
+        // - paint once and let GFX_drawPixel decide where each pixel goes.
+        area->Paint();
+        paintGraphFrame(frame);
         return;
     }
-    const int32_t valueRange = topValue - bottomValue;
 
-    drawAxisLabel(topValue, quantity, (int16_t)axisX, (int16_t)area->posX, (int16_t)top,
-                  PARAM_COLOR_WHITE, area->backgroundColor);
-    drawAxisLabel(bottomValue, quantity, (int16_t)axisX, (int16_t)area->posX, (int16_t)bottom,
-                  PARAM_COLOR_WHITE, area->backgroundColor);
-
-    const uint16_t plotHeight = (bottom > top) ? (uint16_t)(bottom - top) : 1U;
-
-    // Grid points are evenly spaced - that is what the fixed interval count buys us.
-    PixelPoint pixels[GRAPH_POINTS_COUNT];
-    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
+    for (uint16_t painted = 0U; painted < area->sizeY; )
     {
-        pixels[i].valid = points.valid[i];
-        if (!pixels[i].valid)
+        const uint16_t bandY = (uint16_t)(area->posY + painted);
+        uint16_t bandHeight = (uint16_t)(area->sizeY - painted);
+        if (bandHeight > maxBandHeight)
         {
-            pixels[i].x = 0;
-            pixels[i].y = 0;
-            continue;
+            bandHeight = maxBandHeight;
         }
 
-        int32_t value = points.values[i];
-        if (value > topValue)
+        const bool banded = GFX_createFramebuf(area->posX, bandY, area->sizeX, bandHeight);
+        if (banded)
         {
-            value = topValue;
+            // Clipping is what makes the repeated pass cheap: the pixels of the
+            // other bands never reach the panel, they are simply dropped.
+            GFX_setFramebufClipping(true);
+
+            // Takes the place of area->Paint() - the rounded corners were drawn in
+            // the background colour onto a background of the same colour anyway.
+            GFX_clearFramebuf(frame.background);
         }
-        else if (value < bottomValue)
+        else
         {
-            value = bottomValue;
-        }
-
-        const uint32_t xRel = (uint32_t)(((uint64_t)i * plotWidth) / GRAPH_INTERVALS_COUNT);
-        const uint32_t yRel = (uint32_t)(((uint64_t)(topValue - value) * plotHeight) / (uint32_t)valueRange);
-
-        pixels[i].x = (int16_t)(left + xRel);
-        pixels[i].y = (int16_t)(top + yRel);
-    }
-
-    const Color lineColor = quantityLineColor(quantity);
-    const Color areaColor = quantityAreaColor(quantity);
-    const int16_t yBase = (bottom > 0U) ? (int16_t)(bottom - 1U) : 0;
-
-    // An invalid point breaks the curve on purpose - the algorithm marks a gap
-    // in the data that way, so it must not be bridged by a segment.
-    const PixelPoint* prev = nullptr;
-    for (size_t i = 0U; i < GRAPH_POINTS_COUNT; ++i)
-    {
-        if (!pixels[i].valid)
-        {
-            prev = nullptr;
-            continue;
+            GFX_fillRect(area->posX, (int16_t)bandY, area->sizeX, (int16_t)bandHeight,
+                         frame.background);
         }
 
-        if (prev)
+        paintGraphFrame(frame);
+
+        if (banded)
         {
-            drawSegment(*prev, pixels[i], yBase, lineColor, areaColor);
-        }
-        else if ((i + 1U >= GRAPH_POINTS_COUNT) || !pixels[i + 1U].valid)
-        {
-            // Point with no valid neighbour on either side would draw nothing.
-            GFX_fillRect(pixels[i].x, pixels[i].y, 2, 2, lineColor);
+            GFX_flush();
+            GFX_destroyFramebuf();
         }
 
-        prev = &pixels[i];
+        painted = (uint16_t)(painted + bandHeight);
     }
 }

@@ -54,7 +54,7 @@ void EnumSettingWidget::moveRight()
         return;
     }
     currentValue = (uint8_t)((currentValue + 1U) % labelCount);
-    update();
+    paintBuffered();
 }
 
 void EnumSettingWidget::moveLeft()
@@ -65,7 +65,7 @@ void EnumSettingWidget::moveLeft()
     }
     currentValue = (currentValue == 0U) ? (uint8_t)(labelCount - 1U)
                                         : (uint8_t)(currentValue - 1U);
-    update();
+    paintBuffered();
 }
 
 void EnumSettingWidget::applySetting()

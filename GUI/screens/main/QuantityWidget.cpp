@@ -115,11 +115,16 @@ void QuantityWidget::update()
     unitsText->color = fg;
 
     // Repaint area and children
-    GFX_createFramebuf(area->posX, area->posY, area->sizeX, area->sizeY);
+    // Only tear down a buffer we opened ourselves - if one is already up we are
+    // drawing into somebody else's, and they will flush it.
+    const bool ownsFramebuf = GFX_createFramebuf(area->posX, area->posY, area->sizeX, area->sizeY);
     GFX_fillRect(area->posX, area->posY, area->sizeX, area->sizeY, MAIN_WINDOW_BACKGROUND);
     area->Paint();
-    GFX_flush();
-    GFX_destroyFramebuf();
+    if (ownsFramebuf)
+    {
+        GFX_flush();
+        GFX_destroyFramebuf();
+    }
 }
 
 void QuantityWidget::initialize()

@@ -94,12 +94,17 @@ void TimePickerWiget::update()
     hint->posY = textY + pixH + gap;
 
     // Paint background and text
-    GFX_createFramebuf(area->posX, area->posY, area->sizeX, area->sizeY);
+    // Only tear down a buffer we opened ourselves - if one is already up we are
+    // drawing into somebody else's, and they will flush it.
+    const bool ownsFramebuf = GFX_createFramebuf(area->posX, area->posY, area->sizeX, area->sizeY);
     GFX_fillRect(area->posX, area->posY, area->sizeX, area->sizeY, area->backgroundColor);
     text->Paint();
     hint->Paint();
-    GFX_flush();
-    GFX_destroyFramebuf();
+    if (ownsFramebuf)
+    {
+        GFX_flush();
+        GFX_destroyFramebuf();
+    }
 }
 
 void TimePickerWiget::moveLeft()

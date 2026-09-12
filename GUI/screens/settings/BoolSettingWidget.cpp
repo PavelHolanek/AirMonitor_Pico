@@ -34,7 +34,7 @@ void BoolSettingWidget::update()
 void BoolSettingWidget::buttonPressed()
 {
     currentValue = !currentValue;
-    update();
+    paintBuffered();
 }
 
 void BoolSettingWidget::applySetting()

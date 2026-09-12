@@ -31,6 +31,13 @@ static const wchar_t* const INTERVAL_LABELS[] = {
 static_assert(sizeof(graphAlgorithm) == 1U, "GRAPH_ALGORITHM is no longer one byte");
 static_assert(sizeof(meassurementInterval) == 1U, "INTERVAL is no longer one byte");
 
+// paintRows() buffers a slot as one full width strip, and enterWindow() does the
+// same with the heading. Both have to fit.
+static_assert(PARAM_SCREEN_WIDTH * SETTINGS_ROW_PITCH * 3 <= BUFFER_MAX_SIZE,
+              "a settings slot no longer fits the framebuffer");
+static_assert(PARAM_SCREEN_WIDTH * SETTINGS_FIRST_ROW_Y * 3 <= BUFFER_MAX_SIZE,
+              "the settings heading no longer fits the framebuffer");
+
 SettingWindow::SettingWindow()
     : Window(), settingsRows{nullptr}, rowCount(0U), currentRow(0U), firstVisibleRow(0U),
       backRow(nullptr), saveOnLeave(false)
@@ -108,47 +115,97 @@ void SettingWindow::leaveWindow()
 
 void SettingWindow::paintRows()
 {
-    // Wipe everything below the heading first - after a scroll the rows sit in
-    // different slots and the one that left the view has to disappear.
-    GFX_fillRect(0,
-                 SETTINGS_FIRST_ROW_Y,
-                 PARAM_SCREEN_WIDTH,
-                 PARAM_SCREEN_HEIGHT - SETTINGS_FIRST_ROW_Y,
-                 PARAM_COLOR_BLACK);
-
+    // One slot at a time, each through its own framebuffer. The strip is the
+    // full screen width and a whole pitch tall, so the wipe, the row and the
+    // gap below it all land in the same blit - the rows used to be wiped once
+    // and then painted over, and every glyph and rounded corner went to the
+    // panel a pixel at a time.
     for (uint8_t slot = 0U; slot < SETTINGS_VISIBLE_ROWS_COUNT; ++slot)
     {
+        const uint16_t slotY = (uint16_t)(SETTINGS_FIRST_ROW_Y + slot * SETTINGS_ROW_PITCH);
         const uint8_t index = (uint8_t)(firstVisibleRow + slot);
-        if (index >= rowCount)
-        {
-            break;
-        }
 
-        SettingWidget* row = settingsRows[index];
-        row->area->posY = (uint16_t)(SETTINGS_FIRST_ROW_Y + slot * SETTINGS_ROW_PITCH);
-
-        // Both of these repaint the row; which one runs decides whether it
-        // comes out inverted.
-        if (index == currentRow)
+        const bool ownsFramebuf = GFX_createFramebuf(0, slotY,
+                                                     PARAM_SCREEN_WIDTH, SETTINGS_ROW_PITCH);
+        if (ownsFramebuf)
         {
-            row->selected();
+            // After a scroll the rows sit in different slots, so a slot that
+            // lost its row has to come out empty.
+            GFX_clearFramebuf(PARAM_COLOR_BLACK);
         }
         else
         {
-            row->deselected();
+            // The strip did not fit - painting still works, just straight to
+            // the panel, so the wipe has to go there too.
+            GFX_fillRect(0, slotY, PARAM_SCREEN_WIDTH, SETTINGS_ROW_PITCH, PARAM_COLOR_BLACK);
         }
+
+        if (index < rowCount)
+        {
+            SettingWidget* row = settingsRows[index];
+
+            // posY is assigned here: it depends on which slot the row currently
+            // occupies, and that changes as the list scrolls.
+            row->area->posY = slotY;
+
+            // Both of these repaint the row; which one runs decides whether it
+            // comes out inverted. They join the buffer opened above.
+            if (index == currentRow)
+            {
+                row->selected();
+            }
+            else
+            {
+                row->deselected();
+            }
+        }
+
+        if (ownsFramebuf)
+        {
+            GFX_flush();
+            GFX_destroyFramebuf();
+        }
+    }
+
+    // The slots divide the area below the heading exactly at the current
+    // constants, so this folds away - but it keeps the bottom clean if the
+    // pitch or the list start ever stops dividing it.
+    if (SETTINGS_ROWS_AREA_END < PARAM_SCREEN_HEIGHT)
+    {
+        GFX_fillRect(0,
+                     SETTINGS_ROWS_AREA_END,
+                     PARAM_SCREEN_WIDTH,
+                     PARAM_SCREEN_HEIGHT - SETTINGS_ROWS_AREA_END,
+                     PARAM_COLOR_BLACK);
     }
 }
 
 void SettingWindow::enterWindow()
 {
-    GFX_fillScreen(PARAM_COLOR_BLACK);
+    // Only the heading is wiped here - paintRows() covers everything from
+    // SETTINGS_FIRST_ROW_Y down, so clearing the whole screen first would blit
+    // most of the panel twice.
+    const bool ownsFramebuf = GFX_createFramebuf(0, 0, PARAM_SCREEN_WIDTH, SETTINGS_FIRST_ROW_Y);
+    if (ownsFramebuf)
+    {
+        GFX_clearFramebuf(PARAM_COLOR_BLACK);
+    }
+    else
+    {
+        GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, SETTINGS_FIRST_ROW_Y, PARAM_COLOR_BLACK);
+    }
 
     Text title(L"Nastavení", SETTINGS_MARGIN, 16);
     title.textSize = SETTINGS_TITLE_TEXT_SIZE;
     title.color = PARAM_COLOR_WHITE;
     title.backgroundColor = PARAM_COLOR_BLACK;
     title.Paint();
+
+    if (ownsFramebuf)
+    {
+        GFX_flush();
+        GFX_destroyFramebuf();
+    }
 
     currentRow = 0U;
     firstVisibleRow = 0U;

@@ -76,6 +76,10 @@ constexpr uint16_t SETTINGS_ICON_SIZE = 32;
 // pitch keeps it correct.
 constexpr uint8_t SETTINGS_VISIBLE_ROWS_COUNT =
         (PARAM_SCREEN_HEIGHT - SETTINGS_FIRST_ROW_Y) / SETTINGS_ROW_PITCH;
+// First line below the last slot. The slots are painted one by one, so this
+// is where the part of the screen they do not cover starts.
+constexpr uint16_t SETTINGS_ROWS_AREA_END =
+        SETTINGS_FIRST_ROW_Y + SETTINGS_VISIBLE_ROWS_COUNT * SETTINGS_ROW_PITCH;
 
 // Hint line under the last calibration row, small enough to stay out of the way.
 constexpr uint8_t SETTINGS_HINT_TEXT_SIZE = 2;

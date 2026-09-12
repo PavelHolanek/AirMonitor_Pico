@@ -19,13 +19,16 @@ public:
     // area's current colours - which is what makes the inverse look work.
     void drawTitle();
 
+
+    void paintBuffered();
+
     // Left and right belong to the row itself; only enum rows do anything.
     virtual void moveLeft() {}
     virtual void moveRight() {}
 
     void buttonPressed() override {}
 
-    // A selected row is drawn inverted: black text on white.
+    // A selected row is drawn inverted: black text on white. Both repaint.
     void selected() override;
     void deselected() override;
 

@@ -94,12 +94,48 @@ void GraphWindow::updateTitle()
 
 void GraphWindow::enterWindow()
 {
-    GFX_fillScreen(PARAM_COLOR_BLACK);
+    Area* plot = (graphWidget != nullptr) ? graphWidget->area : nullptr;
+
+    if (plot == nullptr)
+    {
+        GFX_fillScreen(PARAM_COLOR_BLACK);
+    }
+    else
+    {
+        // graphWidget->update() repaints its whole area, so only what falls
+        // outside it needs wiping here - clearing the full screen first would
+        // push most of the panel over SPI twice.
+        GFX_fillRect(0, plot->getEndY(), PARAM_SCREEN_WIDTH,
+                     PARAM_SCREEN_HEIGHT - plot->getEndY(), PARAM_COLOR_BLACK);
+        GFX_fillRect(0, plot->posY, plot->posX, plot->sizeY, PARAM_COLOR_BLACK);
+        GFX_fillRect(plot->getEndX(), plot->posY,
+                     PARAM_SCREEN_WIDTH - plot->getEndX(), plot->sizeY, PARAM_COLOR_BLACK);
+    }
+
+    // The strip above the graph holds the title, so it is worth a buffer of its
+    // own: at text size 3 every glyph is forty little blits without one.
+    const uint16_t headerHeight = (plot != nullptr) ? plot->posY : 0U;
+    const bool ownsFramebuf = (headerHeight > 0U)
+                              && GFX_createFramebuf(0, 0, PARAM_SCREEN_WIDTH, headerHeight);
+    if (ownsFramebuf)
+    {
+        GFX_clearFramebuf(PARAM_COLOR_BLACK);
+    }
+    else if (headerHeight > 0U)
+    {
+        GFX_fillRect(0, 0, PARAM_SCREEN_WIDTH, headerHeight, PARAM_COLOR_BLACK);
+    }
 
     updateTitle();
     if (titleText)
     {
         titleText->Paint();
+    }
+
+    if (ownsFramebuf)
+    {
+        GFX_flush();
+        GFX_destroyFramebuf();
     }
 
     if (graphWidget)
