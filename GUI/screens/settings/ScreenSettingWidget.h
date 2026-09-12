@@ -15,8 +15,10 @@ public:
     ScreenSettingWidget(const wchar_t* title, Window* window);
     virtual ~ScreenSettingWidget();
 
+    void buttonPressed() override;
     void update() override;
-    void applySetting() override;
+
+    void applySetting() override {}
 };
 
 #endif // SCREEN_SETTING_WIDGET_H

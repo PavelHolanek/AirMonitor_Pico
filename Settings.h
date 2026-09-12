@@ -8,7 +8,6 @@
 extern "C" {
 #endif
 
-extern uint32_t sensorsMeassurementPeriod;
 extern uint32_t timeUpdatePeriod;
 extern uint32_t idleTime;
 
@@ -35,16 +34,23 @@ typedef enum {
 
 extern GRAPH_ALGORITHM graphAlgorithm;
 extern INTERVAL meassurementInterval;
+uint32_t intervalToMilliseconds(INTERVAL interval);
 
 extern bool useFixedValuesSpanForGraph;
 extern bool developerMode;
-extern bool screenBacklightWhenIdle;
+
+extern bool screenOffWhenIdle;
 
 
 extern int32_t temperatureCalibration;
 extern int32_t preassureCalibration;
 extern int32_t humidityCalibration;
 extern int32_t co2Calibration;
+
+// Empty for now: this will be filled in with NVS (Non-Volatile
+// Storage) writes once the project migrates to the ESP32-S3. Until then every
+// setting is lost on reset.
+void settings_save(void);
 #ifdef __cplusplus
 }
 #endif

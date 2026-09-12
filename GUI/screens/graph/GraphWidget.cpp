@@ -74,6 +74,24 @@ int32_t quantityScaleStep(QUANTITY quantity)
     }
 }
 
+struct FixedValueSpan
+{
+    int32_t bottom;
+    int32_t top;
+};
+
+static FixedValueSpan fixedValueSpan(QUANTITY quantity)
+{
+    switch (quantity)
+    {
+        case QUANTITY_TEMPERATURE: return { 1500,   4000 };  // 15 .. +40 C
+        case QUANTITY_HUMIDITY:    return {     0, 100000 };  //   0 .. 100 %
+        case QUANTITY_PRESSURE:    return { 95000, 105000 };  // 950 .. 1050 hPa
+        case QUANTITY_CO2:         return {   400,   1800 };  // ppm
+        default:                   return {     0,      1 };
+    }
+}
+
 int32_t floorToStep(int32_t value, int32_t step)
 {
     int32_t quotient = value / step;
@@ -417,6 +435,16 @@ bool GraphWidget::computeValueRange(int32_t* outBottom, int32_t* outTop) const
 {
     if (!outBottom || !outTop) return false;
 
+    if (useFixedValuesSpanForGraph)
+    {
+        // No scan of the data at all - that is the point: the axis reads the
+        // same on every update, so two curves can be compared by eye.
+        const FixedValueSpan span = fixedValueSpan(quantity);
+        *outBottom = span.bottom;
+        *outTop = span.top;
+        return true;
+    }
+
     bool found = false;
     int32_t minValue = 0;
     int32_t maxValue = 0;
@@ -536,8 +564,18 @@ void GraphWidget::update()
             continue;
         }
 
+        int32_t value = points.values[i];
+        if (value > topValue)
+        {
+            value = topValue;
+        }
+        else if (value < bottomValue)
+        {
+            value = bottomValue;
+        }
+
         const uint32_t xRel = (uint32_t)(((uint64_t)i * plotWidth) / GRAPH_INTERVALS_COUNT);
-        const uint32_t yRel = (uint32_t)(((uint64_t)(topValue - points.values[i]) * plotHeight) / (uint32_t)valueRange);
+        const uint32_t yRel = (uint32_t)(((uint64_t)(topValue - value) * plotHeight) / (uint32_t)valueRange);
 
         pixels[i].x = (int16_t)(left + xRel);
         pixels[i].y = (int16_t)(top + yRel);

@@ -5,8 +5,10 @@
 
 EnumSettingWidget::EnumSettingWidget(const wchar_t* title, uint8_t* value,
                                      const wchar_t* const* labels, uint8_t labelCount)
-    : SettingWidget(title), value(value), labels(labels), labelCount(labelCount)
+    : SettingWidget(title), value(value), currentValue(value ? *value : 0U),
+      labels(labels), labelCount(labelCount)
 {
+    // Seeded from the live value, so the row opens on what is in force.
 }
 
 EnumSettingWidget::~EnumSettingWidget()
@@ -15,11 +17,11 @@ EnumSettingWidget::~EnumSettingWidget()
 
 const wchar_t* EnumSettingWidget::currentLabel() const
 {
-    if (!value || !labels || labelCount == 0U || *value >= labelCount)
+    if (!value || !labels || labelCount == 0U || currentValue >= labelCount)
     {
         return L"?";
     }
-    return labels[*value];
+    return labels[currentValue];
 }
 
 void EnumSettingWidget::update()
@@ -51,7 +53,7 @@ void EnumSettingWidget::moveRight()
     {
         return;
     }
-    *value = (uint8_t)((*value + 1U) % labelCount);
+    currentValue = (uint8_t)((currentValue + 1U) % labelCount);
     update();
 }
 
@@ -61,11 +63,15 @@ void EnumSettingWidget::moveLeft()
     {
         return;
     }
-    *value = (*value == 0U) ? (uint8_t)(labelCount - 1U) : (uint8_t)(*value - 1U);
+    currentValue = (currentValue == 0U) ? (uint8_t)(labelCount - 1U)
+                                        : (uint8_t)(currentValue - 1U);
     update();
 }
 
 void EnumSettingWidget::applySetting()
 {
-    // The button does nothing on an enum row - the value steps with left/right.
+    if (value)
+    {
+        *value = currentValue;
+    }
 }

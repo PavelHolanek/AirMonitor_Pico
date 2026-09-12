@@ -14,7 +14,7 @@ public:
     NavigableWidget* up;
     NavigableWidget* down;
 
-    void buttonPressed();
+    virtual void buttonPressed();
     virtual void selected();
     virtual void deselected();
 };

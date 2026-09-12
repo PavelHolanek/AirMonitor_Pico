@@ -22,7 +22,7 @@ void ScreenSettingWidget::update()
     drawTitle();
 }
 
-void ScreenSettingWidget::applySetting()
+void ScreenSettingWidget::buttonPressed()
 {
     if (window)
     {

@@ -23,6 +23,8 @@ public:
     virtual void moveLeft() {}
     virtual void moveRight() {}
 
+    void buttonPressed() override {}
+
     // A selected row is drawn inverted: black text on white.
     void selected() override;
     void deselected() override;

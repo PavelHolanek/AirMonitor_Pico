@@ -4,7 +4,7 @@
 #include "core/Bitmaps.h"
 
 BoolSettingWidget::BoolSettingWidget(const wchar_t* title, bool* value)
-    : SettingWidget(title), value(value)
+    : SettingWidget(title), value(value), currentValue(value ? *value : false)
 {
 }
 
@@ -23,7 +23,7 @@ void BoolSettingWidget::update()
     drawTitle();
 
     bitMap32 icon;
-    icon.data = (uint8_t (*)[128])((value && *value) ? &BITMAP32_CHECK : &BITMAP32_CROSS);
+    icon.data = (uint8_t (*)[128])(currentValue ? &BITMAP32_CHECK : &BITMAP32_CROSS);
     icon.color = area->color;
     icon.backgroundColor = area->backgroundColor;
     icon.posX = area->getEndX() - SETTINGS_ROW_PADDING - SETTINGS_ICON_SIZE;
@@ -31,12 +31,16 @@ void BoolSettingWidget::update()
     icon.Paint();
 }
 
+void BoolSettingWidget::buttonPressed()
+{
+    currentValue = !currentValue;
+    update();
+}
+
 void BoolSettingWidget::applySetting()
 {
-    if (!value)
+    if (value)
     {
-        return;
+        *value = currentValue;
     }
-    *value = !*value;
-    update();
 }

@@ -19,8 +19,12 @@ public:
     void joystickAction(JoystickState state) override;
     void enterWindow() override;
 
+    void leaveWindow() override;
+
 private:
-    void addRow(SettingWidget* row);
+    SettingWidget* addRow(SettingWidget* row);
+
+    void applyAllSettings();
 
     // Repaints everything below the heading. Needed after a scroll, because
     // every visible row has moved to a different slot.
@@ -34,6 +38,14 @@ private:
 
     // Index of the row drawn in the topmost slot.
     uint8_t firstVisibleRow;
+
+    // The "Zpet" row. Leaving through it is the only exit to the main screen,
+    // and the only moment the settings are worth writing to storage.
+    SettingWidget* backRow;
+
+    // Set just before that row hands control away, read by leaveWindow() once
+    // the values have been committed.
+    bool saveOnLeave;
 };
 
 #endif // SETTING_WINDOW_H

@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
+#include "Pinout.h"
 #include "hardware/adc.h"
+#include "hardware/gpio.h"
 
 SemaphoreHandle_t i2c0_mutex = NULL;
 SemaphoreHandle_t i2c1_mutex = NULL;
@@ -73,11 +75,6 @@ void intializeSemaphoresAndQueues()
 
     JoystickEventGroup = xEventGroupCreate();
 
-    sensorsMeassurementPeriod = 120000;   // 2 min
-    timeUpdatePeriod = 30000;
-
-    idleTime = 10000;
-
     idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdTRUE, 0, idleTimerCallback);
     dataManager_init();
 }
@@ -134,7 +131,7 @@ void readbmp280Task(void*)
         }
         
         xSemaphoreGive(i2c0_mutex);
-        vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
+        vTaskDelay(pdMS_TO_TICKS(intervalToMilliseconds(meassurementInterval)));
     }
 }
 
@@ -158,7 +155,7 @@ void readSHT40Task(void*)
         }
         
         xSemaphoreGive(i2c0_mutex);
-        vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
+        vTaskDelay(pdMS_TO_TICKS(intervalToMilliseconds(meassurementInterval)));
     }
 }
 
@@ -182,7 +179,7 @@ void readSCD41Task(void*)
         }
         
         xSemaphoreGive(i2c0_mutex);
-        vTaskDelay(pdMS_TO_TICKS(sensorsMeassurementPeriod));
+        vTaskDelay(pdMS_TO_TICKS(intervalToMilliseconds(meassurementInterval)));
     }
 }
 

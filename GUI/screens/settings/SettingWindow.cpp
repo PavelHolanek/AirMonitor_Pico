@@ -32,7 +32,8 @@ static_assert(sizeof(graphAlgorithm) == 1U, "GRAPH_ALGORITHM is no longer one by
 static_assert(sizeof(meassurementInterval) == 1U, "INTERVAL is no longer one byte");
 
 SettingWindow::SettingWindow()
-    : Window(), settingsRows{nullptr}, rowCount(0U), currentRow(0U), firstVisibleRow(0U)
+    : Window(), settingsRows{nullptr}, rowCount(0U), currentRow(0U), firstVisibleRow(0U),
+      backRow(nullptr), saveOnLeave(false)
 {
     // A title has to leave room for its value on the same line: together they
     // must stay under (SETTINGS_ROW_WIDTH - 2 * SETTINGS_ROW_PADDING) /
@@ -44,7 +45,7 @@ SettingWindow::SettingWindow()
     addRow(new EnumSettingWidget(L"Interval měření", (uint8_t*)&meassurementInterval,
                                  INTERVAL_LABELS,
                                  sizeof(INTERVAL_LABELS) / sizeof(INTERVAL_LABELS[0])));
-    addRow(new BoolSettingWidget(L"Podsvícení v klidu", &screenBacklightWhenIdle));
+    //addRow(new BoolSettingWidget(L"Zhasnout v klidu", &screenOffWhenIdle));
     addRow(new BoolSettingWidget(L"Vývojářský režim", &developerMode));
 
     addRow(new ScreenSettingWidget(L"Kalibrace", calibrationWindow));
@@ -52,7 +53,7 @@ SettingWindow::SettingWindow()
     // Leaving the screen is a row of its own, so the button stays free for the
     // rows and left/right stay free for enum values.
     // mainWindow must already exist - gui_init() builds it before this window.
-    addRow(new ScreenSettingWidget(L"Zpět", mainWindow));
+    backRow = addRow(new ScreenSettingWidget(L"Zpět", mainWindow));
 }
 
 SettingWindow::~SettingWindow()
@@ -64,12 +65,12 @@ SettingWindow::~SettingWindow()
     }
 }
 
-void SettingWindow::addRow(SettingWidget* row)
+SettingWidget* SettingWindow::addRow(SettingWidget* row)
 {
     if (!row || rowCount >= SETTINGS_ROWS_COUNT)
     {
         delete row;
-        return;
+        return nullptr;
     }
 
     // posY is assigned by paintRows(): it depends on which slot the row
@@ -83,6 +84,26 @@ void SettingWindow::addRow(SettingWidget* row)
 
     settingsRows[rowCount] = row;
     rowCount++;
+    return row;
+}
+
+void SettingWindow::applyAllSettings()
+{
+    for (uint8_t i = 0U; i < rowCount; ++i)
+    {
+        settingsRows[i]->applySetting();
+    }
+}
+
+void SettingWindow::leaveWindow()
+{
+    applyAllSettings();
+
+    if (saveOnLeave)
+    {
+        saveOnLeave = false;
+        settings_save();
+    }
 }
 
 void SettingWindow::paintRows()
@@ -145,7 +166,10 @@ void SettingWindow::joystickAction(JoystickState state)
 
     if (state.pressed)
     {
-        row->applySetting();
+        // Set before the press, because a screen row leaves from inside
+        // buttonPressed() and leaveWindow() runs while we are still in here.
+        saveOnLeave = (row == backRow);
+        row->buttonPressed();
         return;
     }
 

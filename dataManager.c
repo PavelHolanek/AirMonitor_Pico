@@ -1,4 +1,5 @@
 #include "dataManager.h"
+#include "Settings.h"
 #include <string.h>
 
 static data_manager_processed_sample_t processed_data[DATA_MANAGER_BUFFER_CAPACITY];
@@ -54,20 +55,38 @@ data_manager_processed_sample_t* dataManager_get_data(size_t index)
     return &(processed_data[(data_beginning_index + index) % DATA_MANAGER_BUFFER_CAPACITY]);
 }
 
+static int32_t clampToRange(int32_t value, int32_t low, int32_t high)
+{
+    if (value < low)
+    {
+        return low;
+    }
+    if (value > high)
+    {
+        return high;
+    }
+    return value;
+}
+
 int32_t extract_data_for_quantity(data_manager_processed_sample_t* data, QUANTITY quantity)
 {
+    if (data == NULL)
+    {
+        return 0;
+    }
+
     switch (quantity)
     {
     case QUANTITY_CO2:
-        return data->co2_ppm;
+        return clampToRange((int32_t)data->co2_ppm + co2Calibration, 0, UINT16_MAX);
     case QUANTITY_HUMIDITY:
-        return data->humidity_rh;
+        return clampToRange(data->humidity_rh + humidityCalibration, 0, 100000);
     case QUANTITY_PRESSURE:
-        return data->pressure_pa;
+        return data->pressure_pa + preassureCalibration;
     case QUANTITY_TEMPERATURE:
-        return data->temperature_c;
+        return data->temperature_c + temperatureCalibration;
     default:
-        break;
+        return 0;
     }
 }
 

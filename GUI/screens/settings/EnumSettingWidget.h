@@ -9,6 +9,7 @@ class EnumSettingWidget : public SettingWidget
 {
 private:
     uint8_t* value;
+    uint8_t currentValue;
 
     const wchar_t* const* labels;
 

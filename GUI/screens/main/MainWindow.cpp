@@ -242,16 +242,31 @@ MainWindow::~MainWindow()
 
 void MainWindow::updateData()
 {
-    data_manager_processed_sample_t* currentData = dataManager_get_data(dataManager_count()-1);
+    const size_t count = dataManager_count();
+    if (count == 0U)
+    {
+        // dataManager_count() - 1 would wrap and hand back a null sample.
+        return;
+    }
 
-    getWidgetByType(QUANTITY_TEMPERATURE)->setValue(currentData->temperature_c);
-    getWidgetByType(QUANTITY_TEMPERATURE)->update();
-    getWidgetByType(QUANTITY_HUMIDITY)->setValue(currentData->humidity_rh);
-    getWidgetByType(QUANTITY_HUMIDITY)->update();
-    getWidgetByType(QUANTITY_PRESSURE)->setValue(currentData->pressure_pa);
-    getWidgetByType(QUANTITY_PRESSURE)->update();
-    getWidgetByType(QUANTITY_CO2)->setValue(currentData->co2_ppm);
-    getWidgetByType(QUANTITY_CO2)->update();
+    data_manager_processed_sample_t* currentData = dataManager_get_data(count - 1U);
+
+    // Through extract_data_for_quantity, not the struct members: that is where
+    // the calibration offset is applied, and the graph reads the same way.
+    static const QUANTITY QUANTITIES[] = {
+        QUANTITY_TEMPERATURE, QUANTITY_HUMIDITY, QUANTITY_PRESSURE, QUANTITY_CO2,
+    };
+
+    for (size_t i = 0U; i < sizeof(QUANTITIES) / sizeof(QUANTITIES[0]); ++i)
+    {
+        QuantityWidget* widget = getWidgetByType(QUANTITIES[i]);
+        if (!widget)
+        {
+            continue;
+        }
+        widget->setValue(extract_data_for_quantity(currentData, QUANTITIES[i]));
+        widget->update();
+    }
 }
 
 
