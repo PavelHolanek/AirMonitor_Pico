@@ -30,6 +30,19 @@ typedef struct
     Time time;
 } data_manager_processed_sample_t;
 
+// Every stored sample is timestamped, and the graph relies on those timestamps
+// growing from the oldest entry to the newest. Setting the clock breaks that, so
+// the two limits below decide when the history has to go - see
+// dataManager_erase_if_time_jumped().
+
+// The time picker edits whole minutes, so a step back smaller than this is just
+// the time the user spent in the clock window, not a correction. It also stays
+// below the shortest measurement interval (2 min), so it cannot reorder samples.
+#define DATA_MANAGER_TIME_STEP_BACK_TOLERANCE_SECONDS 60
+
+// Past this, everything already stored turns into one flat gap nobody measured.
+#define DATA_MANAGER_TIME_STEP_FORWARD_LIMIT_SECONDS (2 * 24 * 60 * 60)
+
 int32_t extract_data_for_quantity(data_manager_processed_sample_t* data, QUANTITY quantity);
 
 void dataManager_init(void);
@@ -37,6 +50,13 @@ void dataManager_init(void);
 size_t dataManager_count(void);
 
 data_manager_processed_sample_t* dataManager_get_data(size_t index);
+
+// Drops every stored sample. The buffer stays usable, it is simply empty again.
+void dataManager_erase(void);
+
+// Erases the history when newTime is far enough from the newest stored sample
+// that the two cannot belong to the same series. Returns true when it did.
+bool dataManager_erase_if_time_jumped(Time newTime);
 
 void dataManager_store_and_process_sample(
     Time time,

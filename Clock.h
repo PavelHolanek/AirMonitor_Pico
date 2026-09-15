@@ -32,6 +32,7 @@ void setClockTimeImpl(Time time);
 uint32_t timeToTotalSeconds(Time time);
 int8_t compareTimes(Time lhs, Time rhs);
 bool isValidTime(Time time);
+uint8_t daysInMonthOf(uint8_t month);
 int32_t diffSeconds(Time lhs, Time rhs);
 Time addTime(Time time, int32_t deltaDays, int32_t deltaHours, int32_t deltaMinutes, int32_t deltaSeconds);
 Time addSeconds(Time time, int32_t deltaSeconds);

@@ -143,6 +143,15 @@ void setClockTime(Time time)
     xSemaphoreGive(TimeSetRequestSemaphore);
 }
 
+uint8_t daysInMonthOf(uint8_t month)
+{
+    if (month < 1U || month > 12U)
+    {
+        return 31U;
+    }
+    return daysInMonth[month - 1U];
+}
+
 bool isValidTime(Time time)
 {
     if (time.month < 1U || time.month > 12U)

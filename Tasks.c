@@ -100,13 +100,32 @@ void setClockTimeTask(void*)
         xSemaphoreTake(TimeSetRequestSemaphore, portMAX_DELAY);
         xSemaphoreTake(i2c1_mutex, portMAX_DELAY);
         printf("CLOCK: setClockTimeTask \n");
-        if (xQueueReceive(TimeToSetQueue, &value, TICKS_TO_WAIT) == pdPASS)
+        const bool timeReceived = (xQueueReceive(TimeToSetQueue, &value, TICKS_TO_WAIT) == pdPASS);
+        if (timeReceived)
         {
             setClockTimeImpl(value);
         }
         xSemaphoreGive(i2c1_mutex);
+
+        // Without a new time there is nothing to repaint and nothing to compare
+        // the history against - value would be whatever was left on the stack.
+        if (!timeReceived)
+        {
+            continue;
+        }
+
         xSemaphoreTake(spi0_mutex, portMAX_DELAY);
+        // Under spi0_mutex: the GUI reads the sample buffer while it redraws, so
+        // the history has to go before anything paints from it. The new clock
+        // time goes in first as well, otherwise the graph would redraw itself
+        // around the time it is about to leave behind.
+        const bool erased = dataManager_erase_if_time_jumped(value);
         gui_timeChanged(value);
+        if (erased)
+        {
+            LOG("DATA: history erased, clock moved too far");
+            gui_dataChanged();
+        }
         xSemaphoreGive(spi0_mutex);
     }
 }

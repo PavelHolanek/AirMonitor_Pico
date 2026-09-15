@@ -1,4 +1,4 @@
-// TimePickerWiget.cpp - initial placeholder rendering "00::00"
+// TimePickerWiget.cpp - renders "DD.MM. HH:MM" and edits one field at a time
 #include "TimePickerWiget.h"
 #include "Parameters.h"
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
@@ -8,8 +8,12 @@ TimePickerWiget::TimePickerWiget()
     : NavigableWidget(), text(nullptr)
 {
     hint = nullptr;
-    hintPos = 0;
+    hintPos = FIELD_HOUR;
 }
+
+// Column of the first digit of each field within "DD.MM. HH:MM"
+static const int fieldColumn[] = { 0, 3, 7, 10 };
+static const int timeStringLength = 12; // characters in "DD.MM. HH:MM"
 
 TimePickerWiget::~TimePickerWiget()
 {
@@ -46,17 +50,19 @@ void TimePickerWiget::update()
 
     if (!text)
     {
-        text = new Text(L"00:00");
+        text = new Text(L"01.01. 00:00");
         text->textSize = 4;
     }
     if (!hint)
     {
-        hint = new Text(L"^    ");
+        hint = new Text(L" ");
         hint->textSize = 4;
     }
 
-    // Display currently selected time (set by the window on entry)
-    swprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), L"%02u:%02u", (unsigned)selectedTime.hour, (unsigned)selectedTime.minute);
+    // Display currently selected date and time (set by the window on entry)
+    swprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), L"%02u.%02u. %02u:%02u",
+             (unsigned)selectedTime.day, (unsigned)selectedTime.month,
+             (unsigned)selectedTime.hour, (unsigned)selectedTime.minute);
     text->str = buffer;
 
     // Style sync
@@ -80,14 +86,12 @@ void TimePickerWiget::update()
     // Position hint directly under the main time text with a small vertical gap
     const uint16_t gap = 4;
     const uint16_t hintCharH = 8 * hint->textSize;
-    // Rebuild hint string based on hintPos: two positions only: Hours (0) or Minutes (1)
-    // Construct a 5-char preview (H H : M M); place '*' at column 0 for hours, 3 for minutes
-    for (int i = 0; i < 5; ++i) hintBuffer[i] = L' ';
-    int column = (hintPos == 0) ? 0 : 3; // 0 => under first hour digit, 1 => under first minute digit
+    // Rebuild hint string based on hintPos: underline both digits of the active field
+    for (int i = 0; i < timeStringLength; ++i) hintBuffer[i] = L' ';
+    const int column = fieldColumn[hintPos];
     hintBuffer[column] = L'^';
-    hintBuffer[5] = L' ';
-    hintBuffer[6] = L' ';
-    hintBuffer[7] = L'\0';
+    hintBuffer[column + 1] = L'^';
+    hintBuffer[timeStringLength] = L'\0';
     hint->str = hintBuffer;
 
     hint->posX = textX; // aligned to time text
@@ -109,14 +113,22 @@ void TimePickerWiget::update()
 
 void TimePickerWiget::moveLeft()
 {
-    if (hintPos > 0) hintPos--; else hintPos = 1; // wrap around within 0..1
+    if (hintPos > 0) hintPos--; else hintPos = FIELD_COUNT - 1; // wrap around
     update();
 }
 
 void TimePickerWiget::moveRight()
 {
-    if (hintPos < 1) hintPos++; else hintPos = 0; // wrap around within 0..1
+    if (hintPos < FIELD_COUNT - 1) hintPos++; else hintPos = 0; // wrap around
     update();
+}
+
+// Keep the day inside the selected month, e.g. 31.01. -> 28.02. when stepping the month
+void TimePickerWiget::clampDayToMonth()
+{
+    const uint8_t maxDay = daysInMonthOf(selectedTime.month);
+    if (selectedTime.day < 1U) selectedTime.day = 1U;
+    if (selectedTime.day > maxDay) selectedTime.day = maxDay;
 }
 
 void TimePickerWiget::onPressed()
@@ -127,6 +139,9 @@ void TimePickerWiget::onPressed()
 void TimePickerWiget::setSelectedTime(const Time& t)
 {
     selectedTime = t;
+    // A failed RTC read yields month 0 / day 0 - fall back to a valid date
+    if (selectedTime.month < 1U || selectedTime.month > 12U) selectedTime.month = 1U;
+    clampDayToMonth();
     update();
 }
 
@@ -137,39 +152,62 @@ Time TimePickerWiget::getSelectedTime() const
 
 void TimePickerWiget::moveUp()
 {
-    if (hintPos == 0)
+    switch (hintPos)
     {
-        // increment hours 0..23
-        unsigned h = (unsigned)selectedTime.hour;
-        h = (h + 1) % 24;
-        selectedTime.hour = (uint8_t)h;
-    }
-    else
-    {
-        // increment minutes 0..59
-        unsigned m = (unsigned)selectedTime.minute;
-        m = (m + 1) % 60;
-        selectedTime.minute = (uint8_t)m;
+        case FIELD_DAY:
+        {
+            // increment day 1..days in the selected month
+            const uint8_t maxDay = daysInMonthOf(selectedTime.month);
+            selectedTime.day = (uint8_t)((selectedTime.day >= maxDay) ? 1U : (selectedTime.day + 1U));
+            break;
+        }
+        case FIELD_MONTH:
+            // increment month 1..12
+            selectedTime.month = (uint8_t)((selectedTime.month >= 12U) ? 1U : (selectedTime.month + 1U));
+            clampDayToMonth();
+            break;
+        case FIELD_HOUR:
+            // increment hours 0..23
+            selectedTime.hour = (uint8_t)((selectedTime.hour + 1U) % 24U);
+            break;
+        default: // FIELD_MINUTE
+            // increment minutes 0..59
+            selectedTime.minute = (uint8_t)((selectedTime.minute + 1U) % 60U);
+            break;
     }
     update();
 }
 
 void TimePickerWiget::moveDown()
 {
-    if (hintPos == 0)
+    switch (hintPos)
     {
-        // decrement hours with wrap underflow
-        int h = (int)selectedTime.hour;
-        h = (h - 1);
-        if (h < 0) h = 23;
-        selectedTime.hour = (uint8_t)h;
-    }
-    else
-    {
-        int m = (int)selectedTime.minute;
-        m = (m - 1);
-        if (m < 0) m = 59;
-        selectedTime.minute = (uint8_t)m;
+        case FIELD_DAY:
+        {
+            // decrement day with wrap to the last day of the selected month
+            const uint8_t maxDay = daysInMonthOf(selectedTime.month);
+            selectedTime.day = (uint8_t)((selectedTime.day <= 1U) ? maxDay : (selectedTime.day - 1U));
+            break;
+        }
+        case FIELD_MONTH:
+            // decrement month with wrap underflow
+            selectedTime.month = (uint8_t)((selectedTime.month <= 1U) ? 12U : (selectedTime.month - 1U));
+            clampDayToMonth();
+            break;
+        case FIELD_HOUR:
+        {
+            int h = (int)selectedTime.hour - 1;
+            if (h < 0) h = 23;
+            selectedTime.hour = (uint8_t)h;
+            break;
+        }
+        default: // FIELD_MINUTE
+        {
+            int m = (int)selectedTime.minute - 1;
+            if (m < 0) m = 59;
+            selectedTime.minute = (uint8_t)m;
+            break;
+        }
     }
     update();
 }

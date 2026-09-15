@@ -7,11 +7,43 @@ static data_manager_processed_sample_t processed_data[DATA_MANAGER_BUFFER_CAPACI
 static size_t data_count;
 static size_t data_beginning_index;
 
-void dataManager_init(void)
+void dataManager_erase(void)
 {
     memset(processed_data, 0, sizeof(processed_data));
     data_count = 0;
     data_beginning_index = 0;
+}
+
+void dataManager_init(void)
+{
+    dataManager_erase();
+}
+
+bool dataManager_erase_if_time_jumped(Time newTime)
+{
+    if (data_count == 0U)
+    {
+        return false;
+    }
+
+    const data_manager_processed_sample_t* newest = dataManager_get_data(data_count - 1U);
+    if (newest == NULL)
+    {
+        return false;
+    }
+
+    // Backwards: the samples taken from now on would be stamped earlier than the
+    // ones already stored, so fresh data would start appearing in the middle of
+    // the graph. Far forwards: the whole history becomes a gap nobody measured.
+    const int32_t delta = diffSeconds(newTime, newest->time);
+    if (delta >= -DATA_MANAGER_TIME_STEP_BACK_TOLERANCE_SECONDS
+        && delta <= DATA_MANAGER_TIME_STEP_FORWARD_LIMIT_SECONDS)
+    {
+        return false;
+    }
+
+    dataManager_erase();
+    return true;
 }
 
 size_t dataManager_count(void)

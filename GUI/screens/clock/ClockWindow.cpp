@@ -10,7 +10,7 @@ ClockWindow::ClockWindow()
     picker = new TimePickerWiget();
     if (picker)
     {
-        picker->area = new Area(PARAM_SCREEN_WIDTH / 2 - 100, PARAM_SCREEN_HEIGHT / 2 - 30, 200, 60);
+        picker->area = new Area(PARAM_SCREEN_WIDTH / 2 - 160, PARAM_SCREEN_HEIGHT / 2 - 56, 320, 112);
         picker->area->backgroundColor = PARAM_COLOR_BLACK;
         picker->area->color = PARAM_COLOR_WHITE;
     }
