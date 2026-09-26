@@ -29,8 +29,6 @@ extern QueueHandle_t PreassureQueue;
 extern QueueHandle_t HumidityQueue;
 extern QueueHandle_t CO2Queue;
 
-extern SemaphoreHandle_t TimeRequestSemaphore;
-extern QueueHandle_t CurrentTimeQueue;
 extern SemaphoreHandle_t TimeSetRequestSemaphore;
 extern QueueHandle_t TimeToSetQueue;
 
@@ -46,7 +44,6 @@ extern TimerHandle_t idleTimer;
 
 void intializeSemaphoresAndQueues();
 
-void getClockTimeTask(void*);
 void setClockTimeTask(void*);
 
 void readbmp280Task(void*); 
@@ -65,7 +62,7 @@ void writeLogTask(void*);
 
 void writeValueToStorageTask(void*);
 
-void idleTimerCallback();
+void idleTimerCallback(TimerHandle_t);
 #ifdef __cplusplus
 }
 #endif

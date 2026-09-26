@@ -77,9 +77,9 @@ static Time totalSecondsToTime(uint32_t totalSeconds)
 
 Time getClockTime()
 {
-    Time value;
-    xSemaphoreGive(TimeRequestSemaphore);
-    xQueueReceive(CurrentTimeQueue, ( void * ) &value, TICKS_TO_WAIT);
+    xSemaphoreTake(i2c1_mutex, portMAX_DELAY);
+    const Time value = getClockTimeImpl();
+    xSemaphoreGive(i2c1_mutex);
     return value;
 }
 

@@ -195,17 +195,17 @@ int main()
     joystickCalibration0 = calibrateJoystickAxis(0, joystickCalibration0);
     joystickCalibration1 = calibrateJoystickAxis(1, joystickCalibration1);
 
+    intializeSemaphoresAndQueues();
+
     gpio_init(GPIO_PUSH_PIN);
     gpio_init(GPIO_MOVE_PIN);
     gpio_set_irq_enabled_with_callback(GPIO_PUSH_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
     gpio_set_irq_enabled_with_callback(GPIO_MOVE_PIN, GPIO_IRQ_EDGE_FALL, true, &joystickCallback);
 
     printOnTheScreem("Initializing freeRTOS kernel");
-    intializeSemaphoresAndQueues();
     xTaskCreate(joystickPressedTask,        "joystickPressedTask",        1000, NULL, 10, NULL);
     xTaskCreate(joystickMovedTask,          "joystickMovedTask",          1000, NULL, 10, NULL);
     xTaskCreate(joystickEvaluationTask,     "joystickEvaluationTask",     1000, NULL, 9, NULL);
-    xTaskCreate(getClockTimeTask,           "getClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(setClockTimeTask,           "setClockTimeTask",           1000, NULL, 8, NULL);
     xTaskCreate(readbmp280Task,             "readbmp280Task",             1000, NULL, 2, NULL);
     xTaskCreate(readSHT40Task,              "readSHT40Task",              1000, NULL, 2, NULL);
