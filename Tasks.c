@@ -10,6 +10,7 @@
 #include "sensors/sensor_sdc41.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "Pinout.h"
 #include "hardware/adc.h"
@@ -36,7 +37,6 @@ QueueHandle_t LogsToStoreQueue = NULL;
 
 SemaphoreHandle_t JoystickMoveInteruptionSemaphore = NULL;
 SemaphoreHandle_t JoystickPressInteruptionSemaphore = NULL;
-QueueHandle_t JoystickStateQueue = NULL;
 
 TimerHandle_t idleTimer = NULL;
 
@@ -68,11 +68,10 @@ void intializeSemaphoresAndQueues()
 
     JoystickMoveInteruptionSemaphore = xSemaphoreCreateBinary();
     JoystickPressInteruptionSemaphore = xSemaphoreCreateBinary();
-    JoystickStateQueue = xQueueCreate(1, sizeof(uint8_t));
 
     JoystickEventGroup = xEventGroupCreate();
 
-    idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdTRUE, 0, idleTimerCallback);
+    idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdFALSE, 0, idleTimerCallback);
     dataManager_init();
 }
 void setClockTimeTask(void*)
@@ -253,7 +252,7 @@ void joystickEvaluationTask(void*)
 {
     struct JoystickState state;
     for(;;)
-    { 
+    {
         state.horizontal = 0;
         state.vertical = 0;
         EventBits_t uxBits = xEventGroupWaitBits(JoystickEventGroup,
@@ -261,19 +260,38 @@ void joystickEvaluationTask(void*)
                                                 pdTRUE,
                                                 pdFALSE,
                                                 portMAX_DELAY);
-        const bool joystickUsed = ((uxBits & (EVENT_FLAG_PRESSED | EVENT_FLAG_MOVED)) != 0);
+        state.pressed = ((uxBits & EVENT_FLAG_PRESSED) != 0);
+        bool joystickUsed = state.pressed;
+        if ((uxBits & EVENT_FLAG_MOVED) != 0)
+        {
+            // Read before spi0_mutex: a redraw can hold it long enough for the
+            // stick to spring back, and a centred reading has no direction -
+            // getDominantState() would turn it into "down".
+            adc_select_input(0);
+            state.horizontal = adc_read() - joystickCalibration0;
+            adc_select_input(1);
+            state.vertical = adc_read() - joystickCalibration1;
+
+            if (abs(state.horizontal) >= JOYSTICK_DEAD_ZONE || abs(state.vertical) >= JOYSTICK_DEAD_ZONE)
+            {
+                joystickUsed = true;
+            }
+            else
+            {
+                LOG("TASK: joystick move inside dead zone, dropped");
+            }
+        }
+
+        if (!joystickUsed && (uxBits & EVENT_FLAG_IDLE) == 0)
+        {
+            // Only a dropped move woke us up - nothing to paint.
+            continue;
+        }
+
         xSemaphoreTake(spi0_mutex, portMAX_DELAY);
         if (joystickUsed)
         {
             LOG("TASK: joystickEvaluation");
-            state.pressed = ((uxBits & EVENT_FLAG_PRESSED) != 0);
-            if ((uxBits & EVENT_FLAG_MOVED) != 0)
-            {
-                adc_select_input(0);
-                state.horizontal = adc_read() - joystickCalibration0;
-                adc_select_input(1);
-                state.vertical = adc_read() - joystickCalibration1;
-            }
             gui_joystick(state);
         }
         else

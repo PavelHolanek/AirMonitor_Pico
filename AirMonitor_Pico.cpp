@@ -135,6 +135,7 @@ void joystickCallback(uint gpio, uint32_t events)
     {
         xSemaphoreGiveFromISR(JoystickMoveInteruptionSemaphore, &xHigherPriorityTaskWoken);
     }
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 int16_t initializationScreenTextPosition = 10;

@@ -7,7 +7,7 @@ Window::~Window() {}
 
 uint8_t Window::getDominantState(JoystickState state)
 {
-    // Mirror the directional decision logic used in MainWindow::joystickAction
+    // The diagonals split the plane into four sectors.
     // Returns: 0=right, 1=up, 2=left, 3=down
     if (state.vertical > state.horizontal && state.vertical > -state.horizontal)
     {
