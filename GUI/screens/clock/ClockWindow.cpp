@@ -6,6 +6,7 @@
 #include "GUIManager.h"
 
 ClockWindow::ClockWindow()
+    : Window(), valueRepeat(this, CLOCK_REPEAT_DELAY_MS, CLOCK_REPEAT_PERIOD_MS)
 {
     picker = new TimePickerWiget();
     if (picker)
@@ -39,21 +40,45 @@ void ClockWindow::joystickEvent(const JoystickEvent& event)
         return;
     }
     if (event.type != JOYSTICK_EVENT_DIRECTION) return;
+
+    // Any change ends the repeat, the centre included.
+    valueRepeat.stop();
+
     switch (event.direction)
     {
-        case JOYSTICK_RIGHT:
+        case JOYSTICK_RIGHT: // wraps, only four fields - fields do not repeat
             picker->moveRight();
-            break;
-        case JOYSTICK_UP:
-            picker->moveUp();
             break;
         case JOYSTICK_LEFT:
             picker->moveLeft();
             break;
+        case JOYSTICK_UP:
         case JOYSTICK_DOWN:
-            picker->moveDown();
+            stepValue(event.direction);
+            valueRepeat.start(event.direction);
             break;
         default: // JOYSTICK_NONE - back in the centre
             break;
+    }
+}
+
+void ClockWindow::stepValue(JOYSTICK_DIRECTION direction)
+{
+    if (direction == JOYSTICK_UP)
+    {
+        picker->moveUp();
+    }
+    else
+    {
+        picker->moveDown();
+    }
+}
+
+void ClockWindow::timerExpired(GuiTimer* timer)
+{
+    const JOYSTICK_DIRECTION held = valueRepeat.expired(timer);
+    if (held != JOYSTICK_NONE && picker)
+    {
+        stepValue(held);
     }
 }

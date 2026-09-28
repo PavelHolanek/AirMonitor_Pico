@@ -9,7 +9,8 @@ GraphWindow::GraphWindow()
       quantity(QUANTITY_TEMPERATURE),
       graphWidget(new GraphWidget()),
       titleText(new Text(L"")),
-      titleBuffer{0}
+      titleBuffer{0},
+      scrollRepeat(this, GRAPH_REPEAT_DELAY_MS, GRAPH_REPEAT_PERIOD_MS)
 {
     if (graphWidget)
     {
@@ -158,21 +159,37 @@ void GraphWindow::joystickEvent(const JoystickEvent& event)
         return;
     }
 
+    // Any change ends the repeat, the centre included.
+    scrollRepeat.stop();
+
     switch (event.direction)
     {
         case JOYSTICK_RIGHT:
-            graphWidget->scrollBy(GRAPH_SCROLL_INTERVALS);
-            break;
-        case JOYSTICK_UP:
-            graphWidget->changeScope(1);
-            break;
         case JOYSTICK_LEFT:
-            graphWidget->scrollBy(-GRAPH_SCROLL_INTERVALS);
+            scroll(event.direction);
+            scrollRepeat.start(event.direction);
+            break;
+        case JOYSTICK_UP: // only six scopes - the scope does not repeat
+            graphWidget->changeScope(1);
             break;
         case JOYSTICK_DOWN:
             graphWidget->changeScope(-1);
             break;
         default: // JOYSTICK_NONE - back in the centre
             break;
+    }
+}
+
+void GraphWindow::scroll(JOYSTICK_DIRECTION direction)
+{
+    graphWidget->scrollBy((direction == JOYSTICK_RIGHT) ? GRAPH_SCROLL_INTERVALS : -GRAPH_SCROLL_INTERVALS);
+}
+
+void GraphWindow::timerExpired(GuiTimer* timer)
+{
+    const JOYSTICK_DIRECTION held = scrollRepeat.expired(timer);
+    if (held != JOYSTICK_NONE && graphWidget)
+    {
+        scroll(held);
     }
 }

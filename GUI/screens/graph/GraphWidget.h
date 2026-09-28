@@ -5,11 +5,10 @@
 #include "GraphData.h"
 #include "Base.h"
 
-// One joystick flick moves the frame by a quarter of its width, the same
-// distance as the gap between two labels on the time axis. The joystick fires
-// once per deflection and does not repeat while held, so a step of a single
-// interval would take twenty flicks to page the graph.
-constexpr int32_t GRAPH_SCROLL_INTERVALS = 5;
+// One joystick flick moves the frame by a tenth of its width. Holding the stick
+// repeats the step (GraphWindow), so paging the graph no longer takes a flick
+// per step. Whole intervals only - the grid has to stay on whole clock times.
+constexpr int32_t GRAPH_SCROLL_INTERVALS = 2;
 
 class GraphWidget : public Widget
 {
