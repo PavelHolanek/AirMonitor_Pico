@@ -16,7 +16,7 @@ public:
     SettingWindow();
     virtual ~SettingWindow();
 
-    void joystickAction(JoystickState state) override;
+    void joystickEvent(const JoystickEvent& event) override;
     void enterWindow() override;
 
     void leaveWindow() override;

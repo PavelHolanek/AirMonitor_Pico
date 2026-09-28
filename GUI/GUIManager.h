@@ -2,6 +2,7 @@
 #define GUI_MANAGER_H
 
 #include "Base.h"
+#include "GuiEvent.h"
 #include "core/Window.h"
 #include "screens/main/MainWindow.h"
 #include "screens/settings/SettingWindow.h"
@@ -24,11 +25,13 @@ void gui_dataChanged();
 
 void gui_timeChanged(Time CurerntTime);
 
-void gui_joystick(JoystickState state);
+void gui_handleEvent(const GuiEvent* event);
+
+uint32_t gui_msUntilNextTimer();
+
+void gui_processTimers();
 
 void gui_changeWindow(Window* window);
-
-void gui_idleTimePassed();
 }
 
 #endif // GUI_MANAGER_H

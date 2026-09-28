@@ -74,7 +74,8 @@ static uint16_t renderedLength(const wchar_t* s)
 }
 
 CalibrationWindow::CalibrationWindow()
-    : Window(), rowAreas{nullptr}, currentRow(0U)
+    : Window(), rowAreas{nullptr}, currentRow(0U),
+      valueRepeat(this, CALIBRATION_REPEAT_DELAY_MS, CALIBRATION_REPEAT_PERIOD_MS)
 {
     for (uint8_t i = 0U; i < CALIBRATION_ROWS_COUNT; ++i)
     {
@@ -202,9 +203,14 @@ void CalibrationWindow::moveSelection(uint8_t newRow)
     paintRow(currentRow);
 }
 
-void CalibrationWindow::joystickAction(JoystickState state)
+void CalibrationWindow::stepValue(JOYSTICK_DIRECTION direction)
 {
-    if (state.pressed)
+    changeCurrent((direction == JOYSTICK_RIGHT) ? 1 : -1);
+}
+
+void CalibrationWindow::joystickEvent(const JoystickEvent& event)
+{
+    if (event.type == JOYSTICK_EVENT_BUTTON_DOWN)
     {
         // Leaf screen, so the button leaves - the same as on the graph and clock
         // screens. Left and right are taken by the values themselves.
@@ -212,21 +218,39 @@ void CalibrationWindow::joystickAction(JoystickState state)
         return;
     }
 
-    switch (getDominantState(state))
+    if (event.type != JOYSTICK_EVENT_DIRECTION)
     {
-        case 0: // right
-            changeCurrent(1);
+        return;
+    }
+
+    // Any change ends the repeat, the centre included.
+    valueRepeat.stop();
+
+    switch (event.direction)
+    {
+        case JOYSTICK_RIGHT:
+        case JOYSTICK_LEFT:
+            stepValue(event.direction);
+            valueRepeat.start(event.direction);
             break;
-        case 2: // left
-            changeCurrent(-1);
-            break;
-        case 1: // up - wraps, only four rows
+        case JOYSTICK_UP: // wraps, only four rows - rows do not repeat
             moveSelection((currentRow == 0U)
                           ? (uint8_t)(CALIBRATION_ROWS_COUNT - 1U)
                           : (uint8_t)(currentRow - 1U));
             break;
-        default: // 3: down
+        case JOYSTICK_DOWN:
             moveSelection((uint8_t)((currentRow + 1U) % CALIBRATION_ROWS_COUNT));
             break;
+        default: // JOYSTICK_NONE - back in the centre
+            break;
+    }
+}
+
+void CalibrationWindow::timerExpired(GuiTimer* timer)
+{
+    const JOYSTICK_DIRECTION held = valueRepeat.expired(timer);
+    if (held != JOYSTICK_NONE)
+    {
+        stepValue(held);
     }
 }

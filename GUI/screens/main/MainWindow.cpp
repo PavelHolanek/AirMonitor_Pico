@@ -127,9 +127,9 @@ MainWindow::MainWindow()
     if (co2Widget) { co2Widget->right = nullptr; co2Widget->down = nullptr; }
 }
 
-void MainWindow::joystickAction(JoystickState state)
+void MainWindow::joystickEvent(const JoystickEvent& event)
 {
-    if (state.pressed)
+    if (event.type == JOYSTICK_EVENT_BUTTON_DOWN)
     {
         if (currentWidget == temperatureWidget)
         {
@@ -166,18 +166,22 @@ void MainWindow::joystickAction(JoystickState state)
         }
         return;
     }
+    else if (event.type != JOYSTICK_EVENT_DIRECTION || event.direction == JOYSTICK_NONE)
+    {
+        return;
+    }
     else if (currentWidget)
     {
         NavigableWidget* newWidget = nullptr;
-        switch (getDominantState(state))
+        switch (event.direction)
         {
-            case 0: // right
+            case JOYSTICK_RIGHT:
                 newWidget = currentWidget->right; break;
-            case 1: // up
+            case JOYSTICK_UP:
                 newWidget = currentWidget->up; break;
-            case 2: // left
+            case JOYSTICK_LEFT:
                 newWidget = currentWidget->left; break;
-            default: // 3: down
+            default: // JOYSTICK_DOWN
                 newWidget = currentWidget->down; break;
         }
 

@@ -17,7 +17,7 @@ public:
     void setCurrentTime(Time time);
     void updateData();
 
-    void joystickAction(JoystickState state) override;
+    void joystickEvent(const JoystickEvent& event) override;
     void enterWindow() override;
 
 private:

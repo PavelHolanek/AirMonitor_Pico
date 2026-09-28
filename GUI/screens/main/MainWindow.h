@@ -29,7 +29,7 @@ public:
     void enterQuantityWindow(QUANTITY);
     void enterSettingWindow();
 
-    void joystickAction(JoystickState state) override;
+    void joystickEvent(const JoystickEvent& event) override;
     void enterWindow() override;
     void updateData();
 };

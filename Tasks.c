@@ -10,11 +10,8 @@
 #include "sensors/sensor_sdc41.h"
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include "Libraries/pico-displayDrivs/gfx/gfx.h"
 #include "Pinout.h"
-#include "hardware/adc.h"
-#include "hardware/gpio.h"
 
 SemaphoreHandle_t i2c0_mutex = NULL;
 SemaphoreHandle_t i2c1_mutex = NULL;
@@ -35,15 +32,7 @@ QueueHandle_t TimeToSetQueue = NULL;
 
 QueueHandle_t LogsToStoreQueue = NULL;
 
-SemaphoreHandle_t JoystickMoveInteruptionSemaphore = NULL;
-SemaphoreHandle_t JoystickPressInteruptionSemaphore = NULL;
-
-TimerHandle_t idleTimer = NULL;
-
-EventGroupHandle_t JoystickEventGroup = NULL;
-#define EVENT_FLAG_PRESSED   (1 << 0)
-#define EVENT_FLAG_MOVED     (1 << 1)
-#define EVENT_FLAG_IDLE      (1 << 2)   // set by idleTimer, handled by joystickEvaluationTask
+QueueHandle_t GuiEventQueue = NULL;
 
 void intializeSemaphoresAndQueues()
 {
@@ -66,12 +55,8 @@ void intializeSemaphoresAndQueues()
 
     LogsToStoreQueue = xQueueCreate(8, sizeof(char*));
 
-    JoystickMoveInteruptionSemaphore = xSemaphoreCreateBinary();
-    JoystickPressInteruptionSemaphore = xSemaphoreCreateBinary();
+    GuiEventQueue = xQueueCreate(GUI_EVENT_QUEUE_LENGTH, sizeof(GuiEvent));
 
-    JoystickEventGroup = xEventGroupCreate();
-
-    idleTimer = xTimerCreate("Timer", pdMS_TO_TICKS(idleTime), pdFALSE, 0, idleTimerCallback);
     dataManager_init();
 }
 void setClockTimeTask(void*)
@@ -224,86 +209,36 @@ void timeChangedGUITask(void*)
     }
 }
 
-void joystickPressedTask(void*)
+void postJoystickEventToGui(const JoystickEvent* event)
 {
-    for(;;)
-    { 
-        xSemaphoreTake(JoystickPressInteruptionSemaphore, portMAX_DELAY);
-        LOG("TASK: joystickPressed");
-        xEventGroupSetBits(JoystickEventGroup, EVENT_FLAG_PRESSED);
-        vTaskDelay(JOYSTICK_DEBOUNCING_PERIOD);
-        xSemaphoreTake(JoystickPressInteruptionSemaphore, 0);
+    GuiEvent guiEvent;
+    guiEvent.type = GUI_EVENT_JOYSTICK;
+    guiEvent.joystick = *event;
+    // Runs on the joystick task, which must never wait for the GUI.
+    if (xQueueSend(GuiEventQueue, &guiEvent, 0) != pdPASS)
+    {
+        LOG("GUI: event queue full, joystick event dropped");
     }
 }
 
-void joystickMovedTask(void*)
+void guiTask(void*)
 {
-    for(;;)
-    { 
-        xSemaphoreTake(JoystickMoveInteruptionSemaphore, portMAX_DELAY);
-        LOG("TASK: joystickMoved");
-        xEventGroupSetBits(JoystickEventGroup, EVENT_FLAG_MOVED);
-        vTaskDelay(JOYSTICK_DEBOUNCING_PERIOD);
-        xSemaphoreTake(JoystickMoveInteruptionSemaphore,0);
-    }
-}
-
-void joystickEvaluationTask(void*)
-{
-    struct JoystickState state;
+    GuiEvent event;
     for(;;)
     {
-        state.horizontal = 0;
-        state.vertical = 0;
-        EventBits_t uxBits = xEventGroupWaitBits(JoystickEventGroup,
-                                                EVENT_FLAG_PRESSED | EVENT_FLAG_MOVED | EVENT_FLAG_IDLE,
-                                                pdTRUE,
-                                                pdFALSE,
-                                                portMAX_DELAY);
-        state.pressed = ((uxBits & EVENT_FLAG_PRESSED) != 0);
-        bool joystickUsed = state.pressed;
-        if ((uxBits & EVENT_FLAG_MOVED) != 0)
-        {
-            // Read before spi0_mutex: a redraw can hold it long enough for the
-            // stick to spring back, and a centred reading has no direction -
-            // getDominantState() would turn it into "down".
-            adc_select_input(0);
-            state.horizontal = adc_read() - joystickCalibration0;
-            adc_select_input(1);
-            state.vertical = adc_read() - joystickCalibration1;
-
-            if (abs(state.horizontal) >= JOYSTICK_DEAD_ZONE || abs(state.vertical) >= JOYSTICK_DEAD_ZONE)
-            {
-                joystickUsed = true;
-            }
-            else
-            {
-                LOG("TASK: joystick move inside dead zone, dropped");
-            }
-        }
-
-        if (!joystickUsed && (uxBits & EVENT_FLAG_IDLE) == 0)
-        {
-            // Only a dropped move woke us up - nothing to paint.
-            continue;
-        }
+        // Sleep until an event comes or the nearest GUI timer is due
+        const uint32_t waitMs = gui_msUntilNextTimer();
+        const TickType_t wait = (waitMs == UINT32_MAX) ? portMAX_DELAY : pdMS_TO_TICKS(waitMs);
+        const bool received = (xQueueReceive(GuiEventQueue, &event, wait) == pdPASS);
 
         xSemaphoreTake(spi0_mutex, portMAX_DELAY);
-        if (joystickUsed)
+        if (received)
         {
-            LOG("TASK: joystickEvaluation");
-            gui_joystick(state);
+            gui_handleEvent(&event);
         }
-        else
-        {
-            LOG("TASK: idleTimePassed");
-            gui_idleTimePassed();
-        }
+        // After an event as well, so a stream of events cannot starve the timers
+        gui_processTimers();
         xSemaphoreGive(spi0_mutex);
-        if (joystickUsed)
-        {
-            xTimerReset(idleTimer, portMAX_DELAY);
-        }
     }
 }
 
@@ -321,9 +256,4 @@ void writeValueToStorageTask(void*)
     { 
         LOG("TASK: writeValueToStorage");
     }
-}
-
-void idleTimerCallback(TimerHandle_t)
-{
-    xEventGroupSetBits(JoystickEventGroup, EVENT_FLAG_IDLE);
 }

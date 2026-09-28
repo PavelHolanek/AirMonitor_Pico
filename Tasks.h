@@ -6,15 +6,14 @@ extern "C" {
 #endif
 
 #include "Clock.h"
+#include "Joystick.h"
  
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "semphr.h"
-#include "event_groups.h"
 
 #define TICKS_TO_WAIT 1000
-#define JOYSTICK_DEBOUNCING_PERIOD pdMS_TO_TICKS(500)
-#define JOYSTICK_DEAD_ZONE 200
+#define GUI_EVENT_QUEUE_LENGTH 16
 
 extern SemaphoreHandle_t i2c0_mutex;
 extern SemaphoreHandle_t i2c1_mutex;
@@ -35,12 +34,7 @@ extern QueueHandle_t TimeToSetQueue;
 
 extern QueueHandle_t LogsToStoreQueue;
 
-extern SemaphoreHandle_t JoystickMoveInteruptionSemaphore;
-extern SemaphoreHandle_t JoystickPressInteruptionSemaphore;
-
-extern EventGroupHandle_t JoystickEventGroup;
-
-extern TimerHandle_t idleTimer;
+extern QueueHandle_t GuiEventQueue;
 
 void intializeSemaphoresAndQueues();
 
@@ -54,15 +48,16 @@ void dataManagerTask(void*);
 
 void timeChangedGUITask(void*);
 
-void joystickPressedTask(void*);
-void joystickMovedTask(void*);
-void joystickEvaluationTask(void*);
+// The joystick driver's listener: hands the event over to guiTask.
+void postJoystickEventToGui(const JoystickEvent* event);
+
+// The only task that handles joystick events and GUI timers.
+void guiTask(void*);
 
 void writeLogTask(void*);
 
 void writeValueToStorageTask(void*);
 
-void idleTimerCallback(TimerHandle_t);
 #ifdef __cplusplus
 }
 #endif

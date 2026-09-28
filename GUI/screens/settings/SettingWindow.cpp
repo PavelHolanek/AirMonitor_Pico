@@ -212,7 +212,7 @@ void SettingWindow::enterWindow()
     paintRows();
 }
 
-void SettingWindow::joystickAction(JoystickState state)
+void SettingWindow::joystickEvent(const JoystickEvent& event)
 {
     if (rowCount == 0U)
     {
@@ -221,7 +221,7 @@ void SettingWindow::joystickAction(JoystickState state)
 
     SettingWidget* row = settingsRows[currentRow];
 
-    if (state.pressed)
+    if (event.type == JOYSTICK_EVENT_BUTTON_DOWN)
     {
         // Set before the press, because a screen row leaves from inside
         // buttonPressed() and leaveWindow() runs while we are still in here.
@@ -230,21 +230,28 @@ void SettingWindow::joystickAction(JoystickState state)
         return;
     }
 
-    uint8_t newRow;
-    switch (getDominantState(state))
+    if (event.type != JOYSTICK_EVENT_DIRECTION)
     {
-        case 0: // right - the row decides, only enum rows react
+        return;
+    }
+
+    uint8_t newRow;
+    switch (event.direction)
+    {
+        case JOYSTICK_RIGHT: // the row decides, only enum rows react
             row->moveRight();
             return;
-        case 2: // left
+        case JOYSTICK_LEFT:
             row->moveLeft();
             return;
-        case 1: // up - wraps, so the last row is one flick from the first
+        case JOYSTICK_UP: // wraps, so the last row is one flick from the first
             newRow = (currentRow == 0U) ? (uint8_t)(rowCount - 1U) : (uint8_t)(currentRow - 1U);
             break;
-        default: // 3: down
+        case JOYSTICK_DOWN:
             newRow = (uint8_t)((currentRow + 1U) % rowCount);
             break;
+        default: // JOYSTICK_NONE - back in the centre
+            return;
     }
 
     if (newRow == currentRow)

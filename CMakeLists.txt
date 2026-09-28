@@ -65,10 +65,15 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         GUI/core/NavigableWidget.cpp
         GUI/core/Window.h
         GUI/core/Window.cpp
+        GUI/core/GuiTimer.h
+        GUI/core/GuiTimer.cpp
+        GUI/core/HoldRepeat.h
+        GUI/core/HoldRepeat.cpp
 
         # --- GUI: window switching and the C entry points ---
         GUI/GUIManager.h
         GUI/GUIManager_c.h
+        GUI/GuiEvent.h
         GUI/GUIManager.cpp
 
         # --- GUI: main screen ---
@@ -118,6 +123,8 @@ add_executable(AirMonitor_Pico AirMonitor_Pico.cpp
         Pinout.h
         Clock.c
         Clock.h
+        Joystick.c
+        Joystick.h
         dataManager.c
         dataManager.h
         Settings.h

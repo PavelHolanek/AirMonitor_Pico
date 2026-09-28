@@ -145,32 +145,34 @@ void GraphWindow::enterWindow()
     }
 }
 
-void GraphWindow::joystickAction(JoystickState state)
+void GraphWindow::joystickEvent(const JoystickEvent& event)
 {
-    if (state.pressed)
+    if (event.type == JOYSTICK_EVENT_BUTTON_DOWN)
     {
         gui_changeWindow(mainWindow);
         return;
     }
 
-    if (!graphWidget)
+    if (!graphWidget || event.type != JOYSTICK_EVENT_DIRECTION)
     {
         return;
     }
 
-    switch (getDominantState(state))
+    switch (event.direction)
     {
-        case 0: // right
+        case JOYSTICK_RIGHT:
             graphWidget->scrollBy(GRAPH_SCROLL_INTERVALS);
             break;
-        case 1: // up
+        case JOYSTICK_UP:
             graphWidget->changeScope(1);
             break;
-        case 2: // left
+        case JOYSTICK_LEFT:
             graphWidget->scrollBy(-GRAPH_SCROLL_INTERVALS);
             break;
-        default: // 3: down
+        case JOYSTICK_DOWN:
             graphWidget->changeScope(-1);
+            break;
+        default: // JOYSTICK_NONE - back in the centre
             break;
     }
 }

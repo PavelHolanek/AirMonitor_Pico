@@ -27,30 +27,33 @@ void ClockWindow::enterWindow()
     if (picker) picker->update();
 }
 
-void ClockWindow::joystickAction(JoystickState state)
+void ClockWindow::joystickEvent(const JoystickEvent& event)
 {
     // Left/right move the asterisk within the TimePickerWiget when selected
     if (!picker) return;
-    if (state.pressed)
+    if (event.type == JOYSTICK_EVENT_BUTTON_DOWN)
     {
         // Commit selected time to RTC
         setClockTime(picker->getSelectedTime());
         gui_changeWindow(mainWindow);
         return;
     }
-    switch (getDominantState(state))
+    if (event.type != JOYSTICK_EVENT_DIRECTION) return;
+    switch (event.direction)
     {
-        case 0: // right
+        case JOYSTICK_RIGHT:
             picker->moveRight();
             break;
-        case 1: // up
+        case JOYSTICK_UP:
             picker->moveUp();
             break;
-        case 2: // left
+        case JOYSTICK_LEFT:
             picker->moveLeft();
             break;
-        default: // 3: down
+        case JOYSTICK_DOWN:
             picker->moveDown();
+            break;
+        default: // JOYSTICK_NONE - back in the centre
             break;
     }
 }
